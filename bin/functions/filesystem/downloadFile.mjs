@@ -1,6 +1,6 @@
 import fetch from 'node-fetch';
 import fs from 'fs';
-
+import path from 'path';
 import { msgDownloadFileWritingFile } from '../../meta/messages.mjs';
 import { errorDownloadFile } from '../../meta/errors.mjs';
 
@@ -18,14 +18,19 @@ import { errorDownloadFile } from '../../meta/errors.mjs';
  */
 export async function downloadFile(url, folder, file) {
   if (!url || !folder || !file) throw new Error(errorDownloadFile);
-
   const response = await fetch(url);
   if (response.status !== 200) return;
 
   if (!fs.existsSync(folder)) fs.mkdirSync(folder);
 
-  return new Promise((resolve, reject) => {
-    const PATH = `${folder}/${file}`;
+  return new Promise(async (resolve, reject) => {
+		const PATH = `${folder}/${file}`;
+
+		try {
+			await	fs.promises.mkdir(path.dirname(PATH));
+		} catch(e){
+		}
+
     console.log(msgDownloadFileWritingFile(PATH));
     const _file = fs.createWriteStream(PATH);
     response.body.pipe(_file);

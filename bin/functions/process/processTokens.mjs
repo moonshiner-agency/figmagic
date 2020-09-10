@@ -18,40 +18,9 @@ import { setupEasingTokens } from '../tokens/setupEasingTokens.mjs';
 import { errorProcessTokens, errorProcessTokensNoConfig } from '../../meta/errors.mjs';
 import { ignoreElementsKeywords } from '../../meta/ignoreElementsKeywords.mjs';
 
-/**
- * Process tokens
- *
- * @exports
- * @function
- * @param {object} sheet - Sheet object from Figma
- * @param {string} name - Token name
- * @param {object} [config] - User configuration object
- * @returns {object} - returns object with design tokens
- * @throws {errorProcessTokens} - When missing sheet or name
- * @throws {errorProcessTokensNoConfig} - When missing config, required for certain processing
- */
-export function processTokens(sheet, name, config) {
-  if (!sheet || !name) throw new Error(errorProcessTokens);
-
-  // Filter out elements that contain ignore keywords in their name
-  sheet.children = sheet.children.filter((item) => {
-    let shouldInclude = true;
-
-    for (let i = 0; i < ignoreElementsKeywords.length; i++) {
-      const keywordToIgnore = ignoreElementsKeywords[i];
-
-      if (item.name.toLowerCase().indexOf(keywordToIgnore) >= 0) {
-        shouldInclude = false;
-        break;
-      }
-    }
-
-    return shouldInclude;
-  });
-
-  const _NAME = name.toLowerCase();
+const processGroup = ({name, sheet, config}) => {
+	const _NAME = name.toLowerCase();
   let processedTokens = undefined;
-
   switch (_NAME) {
     case 'borderwidth':
     case 'borderwidths': {
@@ -154,4 +123,46 @@ export function processTokens(sheet, name, config) {
   }
 
   return processedTokens;
+};
+/**
+ * Process tokens
+ *
+ * @exports
+ * @function
+ * @param {object} sheet - Sheet object from Figma
+ * @param {string} name - Token name
+ * @param {object} [config] - User configuration object
+ * @returns {object} - returns object with design tokens
+ * @throws {errorProcessTokens} - When missing sheet or name
+ * @throws {errorProcessTokensNoConfig} - When missing config, required for certain processing
+ */
+export function processTokens(sheet, name, config) {
+  if (!sheet || !name) throw new Error(errorProcessTokens);
+	// debugger;
+  // Filter out elements that contain ignore keywords in their name
+  sheet.children = sheet.children.filter((item) => {
+    let shouldInclude = true;
+
+    for (let i = 0; i < ignoreElementsKeywords.length; i++) {
+      const keywordToIgnore = ignoreElementsKeywords[i];
+
+      if (item.name.toLowerCase().indexOf(keywordToIgnore) >= 0) {
+        shouldInclude = false;
+        break;
+      }
+    }
+
+    return shouldInclude;
+	});
+	const groups = sheet.children.filter(item => item.type === 'GROUP');
+	if(!groups.length){
+		return processGroup({name, sheet, config});
+	}
+
+	let tokenGroups = {};
+
+	groups.forEach(groupSheet => {
+			tokenGroups = {...tokenGroups, [groupSheet.name.replace('group-', '')]: processGroup({name, sheet: groupSheet, config})};
+	})
+	return tokenGroups;
 }

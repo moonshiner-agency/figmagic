@@ -22,7 +22,7 @@ export async function writeGraphics(fileList, config) {
 
   await Promise.all(
     fileList.map(async file => {
-      await downloadFile(file.url, outputFolderGraphics, file.file);
+      await downloadFile(file.url, outputFolderGraphics, [file.group, file.file].join('/'));
     })
   );
 
