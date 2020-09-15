@@ -9,6 +9,7 @@
     "design system",
     "salesforce theo"
   ],
+  "main": "bundle.js",
   "homepage": "https://www.figmagic.com",
   "repository": {
     "type": "git",
@@ -56,12 +57,16 @@
     "prettier": "^2.0.5",
     "pretty-quick": "^2.0.1",
     "snyk": "^1.366.2",
-    "validate-commit-msg": "^2.14.0"
+    "validate-commit-msg": "^2.14.0",
+    "webpack-cli": "^3.3.12"
   },
   "dependencies": {
     "dotenv": "^8.2.0",
-    "node-fetch": "^2.6.0",
-    "trash": "^6.1.1"
+    "fs": "0.0.1-security",
+    "node-fetch": "^2.6.1",
+    "path": "^0.12.7",
+    "trash": "^6.1.1",
+    "webpack": "next"
   },
   "bin": {
     "figmagic": "index.mjs"
@@ -71,7 +76,8 @@
     "figmagic": "node --experimental-modules index.mjs",
     "test": "jest __tests__ --collectCoverage",
     "snyk-protect": "snyk protect",
-    "prepare": "npm run snyk-protect"
+    "prepare": "npm run snyk-protect",
+    "webpack": "webpack"
   },
   "config": {
     "commitizen": {

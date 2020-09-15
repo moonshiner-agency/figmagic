@@ -18,8 +18,8 @@ import { setupEasingTokens } from '../tokens/setupEasingTokens.mjs';
 import { errorProcessTokens, errorProcessTokensNoConfig } from '../../meta/errors.mjs';
 import { ignoreElementsKeywords } from '../../meta/ignoreElementsKeywords.mjs';
 
-const processGroup = ({name, sheet, config}) => {
-	const _NAME = name.toLowerCase();
+const processGroup = ({ name, sheet, config }) => {
+  const _NAME = name.toLowerCase();
   let processedTokens = undefined;
   switch (_NAME) {
     case 'borderwidth':
@@ -122,7 +122,10 @@ const processGroup = ({name, sheet, config}) => {
     }
   }
 
-  return processedTokens;
+  return Object.entries(processedTokens).reduce((res, [key, value]) => {
+    res[key] = { value };
+    return res;
+  }, {});
 };
 /**
  * Process tokens
@@ -138,7 +141,7 @@ const processGroup = ({name, sheet, config}) => {
  */
 export function processTokens(sheet, name, config) {
   if (!sheet || !name) throw new Error(errorProcessTokens);
-	// debugger;
+  // debugger;
   // Filter out elements that contain ignore keywords in their name
   sheet.children = sheet.children.filter((item) => {
     let shouldInclude = true;
@@ -153,16 +156,19 @@ export function processTokens(sheet, name, config) {
     }
 
     return shouldInclude;
-	});
-	const groups = sheet.children.filter(item => item.type === 'GROUP');
-	if(!groups.length){
-		return processGroup({name, sheet, config});
-	}
+  });
+  const groups = sheet.children.filter((item) => item.type === 'GROUP');
+  if (!groups.length) {
+    return { [name]: processGroup({ name, sheet, config }) };
+  }
 
-	let tokenGroups = {};
+  let tokenGroups = {};
 
-	groups.forEach(groupSheet => {
-			tokenGroups = {...tokenGroups, [groupSheet.name.replace('group-', '')]: processGroup({name, sheet: groupSheet, config})};
-	})
-	return tokenGroups;
+  groups.forEach((groupSheet) => {
+    tokenGroups = {
+      ...tokenGroups,
+      [groupSheet.name.replace('group-', '')]: processGroup({ name, sheet: groupSheet, config })
+    };
+  });
+  return { [name]: tokenGroups };
 }

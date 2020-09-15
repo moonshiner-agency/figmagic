@@ -1,5 +1,5 @@
-#!/bin/sh
-':'; //# ; exec /usr/bin/env node --experimental-modules --no-warnings "$0" "$@"
+// #!/bin/sh
+// ':'; //# ; exec /usr/bin/env node --experimental-modules --no-warnings "$0" "$@"
 
 import path from 'path';
 import trash from 'trash';
@@ -33,11 +33,9 @@ import {
 
 const FIGMAGIC_RC_FILENAME = `.figmagicrc`;
 
-async function figmagic() {
+export default async function figmagic({ CLI_ARGS, CWD } = { CLI_ARGS: [], CWD: '' }) {
   // Setup
-  dotenv.config();
-  const [, , ...CLI_ARGS] = process.argv;
-  const USER_CONFIG_PATH = path.join(`${process.cwd()}`, FIGMAGIC_RC_FILENAME);
+  const USER_CONFIG_PATH = path.join(`${CWD}`, FIGMAGIC_RC_FILENAME);
   const CONFIG = await createConfiguration(USER_CONFIG_PATH, ...CLI_ARGS);
   const {
     token,
@@ -126,10 +124,12 @@ async function figmagic() {
   console.log(msgJobComplete);
 }
 
-(async () => {
-  try {
-    await figmagic();
-  } catch (error) {
-    console.error(`${colors.FgRed}${error}`);
-  }
-})();
+// (async () => {
+//   try {
+//     dotenv.config();
+//     const [, , ...CLI_ARGS] = process.argv;
+//     await figmagic({ CLI_ARGS, CWD: process.cwd() });
+//   } catch (error) {
+//     console.error(`${colors.FgRed}${error}`);
+//   }
+// })();
