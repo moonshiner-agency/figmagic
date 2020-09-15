@@ -1,1 +1,1 @@
-export const ignoreElementsKeywords = ['ignore'];
+export const ignoreElementsKeywords = ['ignore', 'description', 'layout'];
