@@ -138,13 +138,13 @@ async function prepareWrite(type, file, path, name, format, metadata, templates)
     if (metadata && metadata.dataType === 'enum') {
       fileContent = `// ${msgGeneratedFileWarning}\n\nenum ${name} {${createEnumStringOutOfObject(
         file
-      )}\n}\n\nexport default ${name};`;
+      )}\n}\n\nmodule.exports = ${name};`;
     } else {
       fileContent = `// ${msgGeneratedFileWarning}\n\nconst ${name} = ${JSON.stringify(
         file,
         null,
         ' '
-      )}\n\nexport default ${name};`;
+      )}\n\nmodule.exports = ${name};`;
     }
     filePath += `.${format}`;
   }

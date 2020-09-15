@@ -1,9 +1,5 @@
-// #!/bin/sh
-// ':'; //# ; exec /usr/bin/env node --experimental-modules --no-warnings "$0" "$@"
-
 import path from 'path';
 import trash from 'trash';
-import dotenv from 'dotenv';
 
 import { createConfiguration } from './bin/functions/config/createConfiguration.mjs';
 
@@ -19,7 +15,6 @@ import { createPage } from './bin/functions/process/createPage.mjs';
 import { processGraphics } from './bin/functions/process/processGraphics.mjs';
 import { processElements } from './bin/functions/process/processElements.mjs';
 
-import { colors } from './bin/meta/colors.mjs';
 import { errorGetData } from './bin/meta/errors.mjs';
 import {
   msgSetDataFromLocal,
@@ -123,13 +118,3 @@ export default async function figmagic({ CLI_ARGS, CWD } = { CLI_ARGS: [], CWD: 
   // All went well
   console.log(msgJobComplete);
 }
-
-// (async () => {
-//   try {
-//     dotenv.config();
-//     const [, , ...CLI_ARGS] = process.argv;
-//     await figmagic({ CLI_ARGS, CWD: process.cwd() });
-//   } catch (error) {
-//     console.error(`${colors.FgRed}${error}`);
-//   }
-// })();

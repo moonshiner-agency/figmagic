@@ -56,6 +56,7 @@
     "jest": "^26.1.0",
     "prettier": "^2.0.5",
     "pretty-quick": "^2.0.1",
+    "rollup": "^2.26.11",
     "snyk": "^1.366.2",
     "validate-commit-msg": "^2.14.0",
     "webpack-cli": "^3.3.12"
@@ -65,11 +66,10 @@
     "fs": "0.0.1-security",
     "node-fetch": "^2.6.1",
     "path": "^0.12.7",
-    "trash": "^6.1.1",
-    "webpack": "next"
+    "trash": "^6.1.1"
   },
   "bin": {
-    "figmagic": "index.mjs"
+    "figmagic": "command.mjs"
   },
   "source": "index.mjs",
   "scripts": {
@@ -77,7 +77,8 @@
     "test": "jest __tests__ --collectCoverage",
     "snyk-protect": "snyk protect",
     "prepare": "npm run snyk-protect",
-    "webpack": "webpack"
+    "build": "rollup index.mjs --file bundle.js --format cjs -m",
+    "build:watch": "rollup index.mjs --file bundle.js --format cjs -m -w"
   },
   "config": {
     "commitizen": {
