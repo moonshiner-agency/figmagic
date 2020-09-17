@@ -41,7 +41,7 @@ export async function processElements(elementsPage, components, config) {
   const _ELEMENTS = elementsPage.filter((element) => element.type === 'COMPONENT');
   const ELEMENTS = addDescriptionToElements(_ELEMENTS, components);
   const PARSED_ELEMENTS = await Promise.all(
-    ELEMENTS.map(async (el) => await parseElement(el, config.remSize, IS_TEST_MODE))
+    ELEMENTS.map(async (el) => await parseElement(el, config.remSize, config, false))
   );
   return PARSED_ELEMENTS;
 }
@@ -66,7 +66,7 @@ const addDescriptionToElements = (elements, components) => {
  * @returns {object} - Return new element as object
  * @throws {errorParseElement} - Throw error if not provided element or config
  */
-export async function parseElement(element, remSize, isTest = false) {
+export async function parseElement(element, remSize, config, isTest = false) {
   //console.log('element', typeof element);
   //console.log(element);
 
@@ -170,7 +170,12 @@ export async function parseElement(element, remSize, isTest = false) {
 
           // Parse typography CSS from element (requires layout element to exist)
           if (TEXT_ELEMENT) {
-            let typography = await parseTypographyStylingFromElement(TEXT_ELEMENT, remSize, isTest);
+            let typography = await parseTypographyStylingFromElement(
+              TEXT_ELEMENT,
+              remSize,
+              config,
+              isTest
+            );
             imports = imports.concat(typography.imports);
             css += `\n${SELECTOR_TYPE}${FIXED_NAME} {\n${typography.css}}`;
             text = TEXT_ELEMENT.characters;
@@ -207,7 +212,12 @@ export async function parseElement(element, remSize, isTest = false) {
 
     // Set text styling
     if (TEXT_ELEMENT.length === 1) {
-      let typography = await parseTypographyStylingFromElement(TEXT_ELEMENT[0], remSize, isTest);
+      let typography = await parseTypographyStylingFromElement(
+        TEXT_ELEMENT[0],
+        remSize,
+        config,
+        isTest
+      );
       imports = imports.concat(typography.imports);
       css += typography.css;
       text = TEXT_ELEMENT[0].characters;

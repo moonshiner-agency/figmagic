@@ -211,10 +211,8 @@ async function prepareWrite(type, file, path, name, format, metadata, templates)
 async function write(filePath, fileContent) {
   return await new Promise((resolve, reject) => {
     try {
-      fs.writeFile(filePath, fileContent, 'utf-8', (error) => {
-        if (error) throw new Error(`${errorWrite}: ${error}`);
-        resolve(true);
-      });
+      fs.writeFileSync(filePath, fileContent, 'utf-8');
+      resolve(true);
     } catch (error) {
       reject(error);
     }

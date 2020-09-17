@@ -1,7 +1,6 @@
 import { camelize } from '../helpers/camelize.mjs';
 import { processTokens } from '../process/processTokens.mjs';
 import { writeFile } from './writeFile.mjs';
-
 import { errorWriteTokens, errorWriteTokensNoSettings } from '../../meta/errors.mjs';
 import { acceptedTokenTypes } from '../../meta/acceptedTokenTypes.mjs';
 
@@ -23,32 +22,24 @@ export async function writeTokens(tokens, config) {
   if (!(tokens.length > 0)) throw new Error(errorWriteTokens);
   if (!config) throw new Error(errorWriteTokensNoSettings);
 
-  const tokensToProcess = new Promise((resolve, reject) => {
-    try {
-      tokens.forEach(async (token) => {
-        const tokenName = camelize(token.name);
+  return Promise.all(
+    tokens.map(async (token) => {
+      const tokenName = camelize(token.name);
 
-        if (acceptedTokenTypes.includes(tokenName.toLowerCase())) {
-          const PROCESSED_TOKEN = processTokens(token, tokenName, config);
+      if (acceptedTokenTypes.includes(tokenName.toLowerCase())) {
+        const PROCESSED_TOKEN = processTokens(token, tokenName, config);
 
-          if (config.debugMode) console.log(PROCESSED_TOKEN);
+        if (config.debugMode) console.log(PROCESSED_TOKEN);
 
-          await writeFile(
-            PROCESSED_TOKEN,
-            config.outputFolderTokens,
-            tokenName,
-            'token',
-            config.outputTokenFormat,
-            { dataType: config.outputTokenDataType }
-          );
-        }
-      });
-
-      resolve(true);
-    } catch (error) {
-      reject(error);
-    }
-  });
-
-  return tokensToProcess.catch((error) => console.error(error));
+        await writeFile(
+          PROCESSED_TOKEN,
+          config.outputFolderTokens,
+          tokenName,
+          'token',
+          config.outputTokenFormat,
+          { dataType: config.outputTokenDataType }
+        );
+      }
+    })
+  );
 }

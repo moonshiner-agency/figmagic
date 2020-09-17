@@ -17,25 +17,24 @@ import { errorParseTypographyStylingFromElement } from '../../meta/errors.mjs';
  * @returns {object} - Return object with CSS and imports
  * @throws {errorParseTypographyStylingFromElement} - Throws error if no element or remSize is provided
  */
-export async function parseTypographyStylingFromElement(element, remSize, isTest = false) {
+export async function parseTypographyStylingFromElement(element, remSize, config, isTest = false) {
   if (!element || !remSize) throw new Error(errorParseTypographyStylingFromElement);
-
   // Dynamic imports
-  const PATH = isTest ? path.join('testdata', 'tokens') : `tokens`;
-
-  const _colors = await import(path.join(`${process.cwd()}`, `${PATH}`, `colors.mjs`));
-  const colors = _colors.default;
-  const _fontFamilies = await import(path.join(`${process.cwd()}`, `${PATH}`, `fontFamilies.mjs`));
-  const fontFamilies = _fontFamilies.default;
-  const _fontSizes = await import(path.join(`${process.cwd()}`, `${PATH}`, `fontSizes.mjs`));
+  const PATH = config.outputFolderTokens;
+  console.log(path.join(`${process.cwd()}`, `${PATH}`, `colors.js`));
+  const _colors = await import(path.join(`${process.cwd()}`, `${PATH}`, `colors.js`));
+  const colors = _colors.default.colors;
+  // const _fontFamilies = await import(path.join(`${process.cwd()}`, `${PATH}`, `fontFamilies.js`));
+  // const fontFamilies = _fontFamilies.default;
+  const _fontSizes = await import(path.join(`${process.cwd()}`, `${PATH}`, `fontSizes.js`));
   const fontSizes = _fontSizes.default;
-  const _fontWeights = await import(path.join(`${process.cwd()}`, `${PATH}`, `fontWeights.mjs`));
+  const _fontWeights = await import(path.join(`${process.cwd()}`, `${PATH}`, `fontWeights.js`));
   const fontWeights = _fontWeights.default;
   const _letterSpacings = await import(
-    path.join(`${process.cwd()}`, `${PATH}`, `letterSpacings.mjs`)
+    path.join(`${process.cwd()}`, `${PATH}`, `letterSpacings.js`)
   );
   const letterSpacings = _letterSpacings.default;
-  const _lineHeights = await import(path.join(`${process.cwd()}`, `${PATH}`, `lineHeights.mjs`));
+  const _lineHeights = await import(path.join(`${process.cwd()}`, `${PATH}`, `lineHeights.js`));
   const lineHeights = _lineHeights.default;
 
   let css = ``;
@@ -55,6 +54,7 @@ export async function parseTypographyStylingFromElement(element, remSize, isTest
     }
   })();
 
+  debugger;
   if (FONT_COLOR) {
     const { updatedCss, updatedImports } = getTokenMatch(
       colors,
@@ -88,25 +88,25 @@ export async function parseTypographyStylingFromElement(element, remSize, isTest
   }
 
   // BUG? Will only work correctly with Postscript name?
-  const FONT_FAMILY = (() => {
-    if (element.type === 'TEXT') {
-      if (element.style) {
-        return element.style.fontPostScriptName; //fontFamily;
-      }
-    }
-  })();
+  // const FONT_FAMILY = (() => {
+  //   if (element.type === 'TEXT') {
+  //     if (element.style) {
+  //       return element.style.fontPostScriptName; //fontFamily;
+  //     }
+  //   }
+  // })();
 
-  if (FONT_FAMILY) {
-    const { updatedCss, updatedImports } = getTokenMatch(
-      fontFamilies,
-      'fontFamilies',
-      'font-family',
-      FONT_FAMILY,
-      remSize
-    );
-    css += updatedCss;
-    updatedImports.forEach((i) => imports.push(i));
-  }
+  // if (FONT_FAMILY) {
+  //   const { updatedCss, updatedImports } = getTokenMatch(
+  //     fontFamilies,
+  //     'fontFamilies',
+  //     'font-family',
+  //     FONT_FAMILY,
+  //     remSize
+  //   );
+  //   css += updatedCss;
+  //   updatedImports.forEach((i) => imports.push(i));
+  // }
 
   const FONT_WEIGHT = (() => {
     if (element.type === 'TEXT') {
