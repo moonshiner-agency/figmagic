@@ -22,11 +22,13 @@ const processGroup = ({ name, sheet, config }) => {
   const _NAME = name.toLowerCase();
   let processedTokens = undefined;
   switch (_NAME) {
+    case 'breiten':
     case 'borderwidth':
     case 'borderwidths': {
       processedTokens = setupBorderWidthTokens(sheet);
       break;
     }
+    case 'palette':
     case 'color':
     case 'colors':
     case 'colour':
@@ -78,11 +80,13 @@ const processGroup = ({ name, sheet, config }) => {
       processedTokens = setupRadiusTokens(sheet);
       break;
     }
+    case 'schatten':
     case 'shadow':
     case 'shadows': {
       processedTokens = setupShadowTokens(sheet);
       break;
     }
+    case 'abstände':
     case 'space':
     case 'spaces':
     case 'spacing':
@@ -96,6 +100,7 @@ const processGroup = ({ name, sheet, config }) => {
       processedTokens = setupZindexTokens(sheet);
       break;
     }
+    case 'transitions':
     case 'duration':
     case 'durations':
     case 'animation duration':
@@ -121,7 +126,6 @@ const processGroup = ({ name, sheet, config }) => {
       break;
     }
   }
-
   return Object.entries(processedTokens).reduce((res, [key, value]) => {
     res[key] = { value };
     return res;

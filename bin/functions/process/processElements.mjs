@@ -12,6 +12,30 @@ import {
   errorParseElement
 } from '../../meta/errors.mjs';
 
+const getComponentChildren = (
+  frame,
+  componentChildren = [],
+  groups = [],
+  descriptions = [],
+  lastId = ''
+) => {
+  frame.forEach((f) => {
+    if (f.type === 'COMPONENT') {
+      lastId = f.id;
+      componentChildren.push(f);
+    } else if (f.type === 'FRAME' || f.type === 'GROUP') {
+      if (f.type === 'GROUP') {
+        groups.push(f);
+      }
+      lastId = f.id;
+      getComponentChildren(f.children, componentChildren, groups, descriptions, lastId);
+    } else if (f.type === 'TEXT' && f.name.includes('description')) {
+      descriptions.push({ name: f.name, description: f.characters, id: f.id, component: lastId });
+    }
+  });
+  return { componentChildren, groups, descriptions, lastId };
+};
+
 /**
  * Process all elements from Figma page called "Elements"
  * 1. Filter out components
@@ -36,22 +60,42 @@ import {
 export async function processElements(elementsPage, components, config) {
   if (!elementsPage || !components || !config) throw new Error(errorProcessElements);
 
+  // console.log(components);
+
   const IS_TEST_MODE = config.testMode;
 
-  const _ELEMENTS = elementsPage.filter((element) => element.type === 'COMPONENT');
-  const ELEMENTS = addDescriptionToElements(_ELEMENTS, components);
-  const PARSED_ELEMENTS = await Promise.all(
-    ELEMENTS.map(async (el) => await parseElement(el, config.remSize, config, false))
+  // console.log(elementsPage.filter(e => e.type === 'GROUP'));
+
+  const { componentChildren, descriptions, groups } = getComponentChildren(elementsPage);
+
+  addDescriptionToElements(componentChildren, groups, descriptions);
+  // console.log(_ELEMENTS);
+  // console.log('elements', _ELEMENTS);
+  // const ELEMENTS = addDescriptionToElements(_ELEMENTS, components);
+  // console.log(ELEMENTS);
+  const parsed = await Promise.all(
+    componentChildren.map(async (el) => await parseElement(el, config.remSize, config, false))
   );
-  return PARSED_ELEMENTS;
+
+  // console.log(parsed);
+  return parsed;
 }
 
-const addDescriptionToElements = (elements, components) => {
-  return elements.map((element) => {
-    const _ELEMENT = element;
-    _ELEMENT.description = components[element.id].description;
-    return _ELEMENT;
+const addDescriptionToElements = (components, groups, descriptions) => {
+  components.forEach((c) => {
+    const associatedDescription = descriptions.find((d) => d.component === c.id);
+    if (associatedDescription) {
+      c.description = associatedDescription.description;
+    }
   });
+  groups.forEach((g) => {
+    const associatedDescription = descriptions.find((d) => d.component === g.id);
+    if (associatedDescription) {
+      g.description = associatedDescription.description;
+    }
+  });
+
+  // console.log(components.map(g => g.description));
 };
 
 /**
@@ -67,15 +111,12 @@ const addDescriptionToElements = (elements, components) => {
  * @throws {errorParseElement} - Throw error if not provided element or config
  */
 export async function parseElement(element, remSize, config, isTest = false) {
-  //console.log('element', typeof element);
-  //console.log(element);
-
   if (!element || !remSize) throw new Error(errorParseElement);
 
   let html = ``;
   let newElement = {};
   let extraProps = ``; // Any extra properties, like "placeholder"
-  let text = ``;
+  let text = element.description;
   let imports = [];
 
   // Set up the absolute essentials
@@ -84,18 +125,21 @@ export async function parseElement(element, remSize, config, isTest = false) {
 
   // Set element type
   let elementType = 'div';
-  if (element.description.match(/element=(.*)/))
-    elementType = element.description.match(/element=(.*)/)[1];
-  newElement.element = elementType;
 
-  // Set description
-  let description = element.description;
-  if (element.description.match(/description=(.*)/)) {
-    const INDEX = element.description.indexOf('description=');
-    const MARKER_LENGTH = 12; // "description=" is 12 characters
-    description = description.slice(INDEX + MARKER_LENGTH, description.length);
-    description.replace(/^\s*\n/gm, '');
-    newElement.description = description;
+  if (element.description) {
+    if (element.description.match(/element=(.*)/))
+      elementType = element.description.match(/element=(.*)/)[1];
+    newElement.element = elementType;
+
+    // Set description
+    let description = element.description;
+    if (element.description.match(/description=(.*)/)) {
+      const INDEX = element.description.indexOf('description=');
+      const MARKER_LENGTH = 12; // "description=" is 12 characters
+      description = description.slice(INDEX + MARKER_LENGTH, description.length);
+      description.replace(/^\s*\n/gm, '');
+      newElement.description = description;
+    }
   }
 
   html += `<${elementType}>{{TEXT}}</${elementType}>`;
@@ -108,17 +152,17 @@ export async function parseElement(element, remSize, config, isTest = false) {
   // Nested, layered, or "stateful" elements
   // Requires that "element" (i.e. Figma component) has only groups at the base of the component
   // You can hide groups by adding a leading underscore to their name, like this: "_Redlines" (which would then be ignored below)
-  console.log('|||||');
+  // console.log('|||||');
   if (element.children.every((a) => a.type === 'GROUP')) {
     await Promise.all(
       element.children.map(async (el) => {
         // Ignore children with a leading underscore in their name
         if (el.name[0] !== '_') {
-          console.log(el.children);
+          // console.log(el.children);
           const MAIN_ELEMENT = el.children.filter(
             (e) => e.type === 'RECTANGLE' && e.name[0] !== '_'
           )[0];
-          console.log('MAIN_ELEMENT', MAIN_ELEMENT);
+          // console.log('MAIN_ELEMENT', MAIN_ELEMENT);
           const TEXT_ELEMENT = el.children.filter((e) => e.type === 'TEXT' && e.name[0] !== '_')[0];
 
           // Set placeholder text
@@ -142,10 +186,10 @@ export async function parseElement(element, remSize, config, isTest = false) {
           }
 
           // Set "type", for example for input element
-          if (element.description.match(/type=(.*)/)) {
-            const TYPE = element.description.match(/type=(.*)/)[1];
-            if (!extraProps.includes(`type="${TYPE}`)) extraProps += `type="${TYPE}" `;
-          }
+          // if (element.description.match(/type=(.*)/)) {
+          //   const TYPE = element.description.match(/type=(.*)/)[1];
+          //   if (!extraProps.includes(`type="${TYPE}`)) extraProps += `type="${TYPE}" `;
+          // }
 
           // Check and set correct selector type: class or pseudo-element
           const SELECTOR_TYPE = '.';
@@ -156,7 +200,7 @@ export async function parseElement(element, remSize, config, isTest = false) {
           const FIXED_NAME = MAIN_ELEMENT.name.replace(/\s/gi, '');
 
           // Parse layout CSS from element
-          console.log(msgProcessElementsCreatingElement(MAIN_ELEMENT.name, FIXED_NAME));
+          // console.log(msgProcessElementsCreatingElement(MAIN_ELEMENT.name, FIXED_NAME));
 
           let elementStyling = await parseCssFromElement(
             MAIN_ELEMENT,
@@ -169,28 +213,29 @@ export async function parseElement(element, remSize, config, isTest = false) {
           css += `\n${SELECTOR_TYPE}${FIXED_NAME} {\n${elementStyling.css}}`;
 
           // Parse typography CSS from element (requires layout element to exist)
-          if (TEXT_ELEMENT) {
-            let typography = await parseTypographyStylingFromElement(
-              TEXT_ELEMENT,
-              remSize,
-              config,
-              isTest
-            );
-            imports = imports.concat(typography.imports);
-            css += `\n${SELECTOR_TYPE}${FIXED_NAME} {\n${typography.css}}`;
-            text = TEXT_ELEMENT.characters;
-          }
+          // if (TEXT_ELEMENT) {
+          //   let typography = await parseTypographyStylingFromElement(
+          //     TEXT_ELEMENT,
+          //     remSize,
+          //     config,
+          //     isTest
+          //   );
+          //   imports = imports.concat(typography.imports);
+          //   css += `\n${SELECTOR_TYPE}${FIXED_NAME} {\n${typography.css}}`;
+          //   text = TEXT_ELEMENT.characters;
+          // }
         }
       })
     );
-    css = processNestedCss(css);
+    console.log(css, element);
+    // css = processNestedCss(css);
   }
   // Handle regular non-nested elements below
   else {
     // Check for text elements
     const TEXT_ELEMENT = element.children.filter((e) => e.type === 'TEXT' && e.name[0] !== '_');
-    if (TEXT_ELEMENT.length > 1)
-      throw new Error(`${errorProcessElementsWrongTextElementCount} ${element.name}!`);
+    // if (TEXT_ELEMENT.length > 1)
+    //   throw new Error(`${errorProcessElementsWrongTextElementCount} ${element.name}!`);
 
     // Set placeholder text
     if (element.children) {
@@ -205,23 +250,23 @@ export async function parseElement(element, remSize, config, isTest = false) {
     }
 
     // Set "type", for example for input element
-    if (element.description.match(/type=(.*)/)) {
-      const TYPE = element.description.match(/type=(.*)/)[1];
-      extraProps += ` type="${TYPE}"`;
-    }
+    // if (element.description.match(/type=(.*)/)) {
+    //   const TYPE = element.description.match(/type=(.*)/)[1];
+    //   extraProps += ` type="${TYPE}"`;
+    // }
 
     // Set text styling
-    if (TEXT_ELEMENT.length === 1) {
-      let typography = await parseTypographyStylingFromElement(
-        TEXT_ELEMENT[0],
-        remSize,
-        config,
-        isTest
-      );
-      imports = imports.concat(typography.imports);
-      css += typography.css;
-      text = TEXT_ELEMENT[0].characters;
-    }
+    // if (TEXT_ELEMENT.length === 1) {
+    //   let typography = await parseTypographyStylingFromElement(
+    //     TEXT_ELEMENT[0],
+    //     remSize,
+    //     config,
+    //     isTest
+    //   );
+    //   imports = imports.concat(typography.imports);
+    //   css += typography.css;
+    //   text = TEXT_ELEMENT[0].characters;
+    // }
 
     html = html.replace('{{TEXT}}', text);
 
@@ -250,6 +295,8 @@ export async function parseElement(element, remSize, config, isTest = false) {
   newElement.text = text;
   newElement.imports = imports;
 
+  // console.log(newElement);
+
   return newElement;
 }
 
@@ -265,7 +312,7 @@ async function processCssSelfnamedLayer(element, textElement, css, imports, remS
       throw new Error(`${errorProcessElementsWrongElementCount} ${element.name}!`);
 
     const FIXED_NAME = MAIN_ELEMENT[0].name.replace(/\s/gi, '');
-    console.log(msgProcessElementsCreatingElement(MAIN_ELEMENT[0].name, FIXED_NAME));
+    // console.log(msgProcessElementsCreatingElement(MAIN_ELEMENT[0].name, FIXED_NAME));
 
     let elementStyling = await parseCssFromElement(
       MAIN_ELEMENT[0],

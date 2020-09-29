@@ -25,7 +25,7 @@ export async function processGraphics(graphicsPage, config) {
   if (!graphicsPage) throw new Error(errorProcessGraphics);
 
   const { token, url, outputFormatGraphics, outputScaleGraphics } = config;
-	const IDS = getIds(graphicsPage);
+  const IDS = getIds(graphicsPage);
   const ID_STRING = getIdString(IDS);
   const SETTINGS = `&scale=${outputScaleGraphics}&format=${outputFormatGraphics}`;
   const URL = `${url}?ids=${ID_STRING}${SETTINGS}`;
@@ -51,12 +51,10 @@ export async function processGraphics(graphicsPage, config) {
 export const getFileList = (imageResponse, ids, outputFormatGraphics) => {
   if (!imageResponse || !ids || !outputFormatGraphics) throw new Error(errorGetFileList);
 
-  let fileList = [];
+  const fileList = [];
   Object.entries(imageResponse.images).forEach(async ([figmaId, url]) => {
-    let entity = ids.find(({id}) => id === figmaId);
-
-    let name = camelize(entity.name);
-
+    const entity = ids.find(({ id }) => id === figmaId);
+    const name = camelize(entity.name);
     const FILE = `${name}.${outputFormatGraphics}`;
 
     fileList.push({ url, file: FILE, group: entity.group });
@@ -64,9 +62,23 @@ export const getFileList = (imageResponse, ids, outputFormatGraphics) => {
   return fileList;
 };
 
-const getFrameIds = (frame) => frame.children
-	.filter((item) => item.type === 'COMPONENT')
-	.map((item) => ({ id: item.id, name: item.name, group: frame.name }));
+const getComponentChildren = (frame, componentChildren = []) => {
+  frame.children.forEach((f) => {
+    if (f.type === 'COMPONENT') {
+      componentChildren.push(f);
+    } else if (f.type === 'GROUP') {
+      getComponentChildren(f, componentChildren);
+    }
+  });
+  return componentChildren;
+};
+
+const getFrameIds = (frame) => {
+  const componentChildren = getComponentChildren(frame);
+  return componentChildren
+    .filter((item) => item.type === 'COMPONENT')
+    .map((item) => ({ id: item.id, name: item.name, group: frame.name }));
+};
 
 /**
  * Get IDs from graphics page
@@ -80,20 +92,16 @@ const getFrameIds = (frame) => frame.children
  */
 export const getIds = (graphicsPage) => {
   if (!graphicsPage) throw new Error(errorGetIds);
-	if (!(graphicsPage.length > 0)) throw new Error(errorGetIds);
+  if (!(graphicsPage.length > 0)) throw new Error(errorGetIds);
 
   let items = [];
 
-	graphicsPage
-		.filter(item => item.type === 'FRAME')
-		.forEach(frame => {
-			items = [...items, ...getFrameIds(frame)]
-		});
-	// debugger;
-
+  graphicsPage
+    .filter((item) => item.type === 'FRAME')
+    .forEach((frame) => {
+      items = [...items, ...getFrameIds(frame)];
+    });
   // Filter out anything that is not a component
-
-
   return items;
 };
 

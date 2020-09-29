@@ -29,6 +29,17 @@ export function parseCliArgs(argsArray) {
       // reducer: add specific keys to the accumulated config when known arguments match
       (accumulatedConfig, arg, index) => {
         switch (arg) {
+          // provide token page names of figma documents to parse
+          case '--tokenPages':
+            accumulatedConfig.tokenPages = argsArray[index + 1];
+            break;
+          // provide token page names of figma documents to parse
+          case '--graphicPages':
+            accumulatedConfig.graphicPages = argsArray[index + 1];
+            break;
+          case '--elementPages':
+            accumulatedConfig.elementPages = argsArray[index + 1];
+            break;
           // Toggle debug mode if requested
           case '--debug':
             accumulatedConfig.debugMode = true;
@@ -161,6 +172,10 @@ export function parseCliArgs(argsArray) {
           case '--outputFolderTokens':
           case '-tokens':
             accumulatedConfig.outputFolderTokens = argsArray[index + 1];
+            break;
+          case '--outputFolderGraphics':
+          case '-graphics':
+            accumulatedConfig.outputFolderGraphics = argsArray[index + 1];
             break;
           // Handle input: element output folder
           case '--outputFolderElements':

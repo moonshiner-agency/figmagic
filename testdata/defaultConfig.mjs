@@ -6,7 +6,7 @@ export const defaultConfig = {
   outputFileName: 'figma.json',
   outputFolderBaseFile: '.figmagic',
   outputFolderTokens: 'tokens',
-  outputTokenFormat: 'mjs',
+  outputTokenFormat: 'js',
   outputFolderElements: 'elements',
   outputFolderGraphics: 'graphics',
   outputFormatGraphics: 'svg',

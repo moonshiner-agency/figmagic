@@ -54,7 +54,6 @@ export async function parseTypographyStylingFromElement(element, remSize, config
     }
   })();
 
-  debugger;
   if (FONT_COLOR) {
     const { updatedCss, updatedImports } = getTokenMatch(
       colors,

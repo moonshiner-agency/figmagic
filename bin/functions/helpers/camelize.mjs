@@ -15,7 +15,7 @@ export function camelize(str) {
   return (
     str
       // Add a space after uppercase words
-      .replace(/[A-Z]+/g, function (word, index) {
+      .replace(/[A-Z]+/g, function (word) {
         return ' ' + word;
       })
       // Replace all characters that are not letter or number with a space

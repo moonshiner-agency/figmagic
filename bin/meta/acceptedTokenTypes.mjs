@@ -1,3 +1,12 @@
+export const acceptedTranslatedTokenTypes = [
+  'abstände',
+  'breiten',
+  'palette',
+  'schatten',
+  'transition',
+  'transitions'
+];
+
 export const acceptedTokenTypes = [
   'animation delay',
   'animation delays',
@@ -43,5 +52,7 @@ export const acceptedTokenTypes = [
   'spacing',
   'spacings',
   'zindex',
-  'zindices'
+  'zindices',
+
+  ...acceptedTranslatedTokenTypes
 ];

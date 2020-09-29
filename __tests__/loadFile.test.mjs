@@ -23,7 +23,7 @@ test('It should return data from local file', async () => {
       outputFolderTokens: 'tokens',
       outputFormatGraphics: 'svg',
       outputScaleGraphics: 1,
-      outputTokenFormat: 'mjs',
+      outputTokenFormat: 'js',
       spacingUnit: 'rem',
       usePostscriptFontNames: false
     })
@@ -44,7 +44,7 @@ test('It should return data from local file in raw format (not JSON-parsed)', as
   \"outputFileName\": \"figma.json\",
   \"outputFolderBaseFile\": \".figmagic\",
   \"outputFolderTokens\": \"tokens\",
-  \"outputTokenFormat\": \"mjs\",
+  \"outputTokenFormat\": \"js\",
   \"outputFolderGraphics\": \"graphics\",
   \"outputFormatGraphics\": \"svg\",
   \"outputScaleGraphics\": 1,

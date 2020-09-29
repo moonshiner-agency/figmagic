@@ -46,35 +46,37 @@ export async function writeElements(elements, config) {
     // Ensure that name is processed like the "write()" function(s) do, so filename matching is same
     const _NAME = NAME.replace('/', '');
 
-    // Write React component - is skipped by default if file already exists
-    if (!SKIP_REACT) {
-      const FILE_EXISTS = fs.existsSync(`${FOLDER}/${_NAME}.jsx`);
-      if (!FILE_EXISTS || FORCE_UPDATE) {
-        writeFile(HTML, FOLDER, NAME, 'component', 'jsx', METADATA, TEMPLATES);
-      }
-    }
+    console.log(NAME, CSS, DESCRIPTION, FOLDER);
 
-    // Write Styled component - is skipped by default if file already exists
-    if (!SKIP_STYLED) {
-      const FILE_EXISTS = fs.existsSync(`${FOLDER}/${_NAME}Styled.jsx`);
-      if (!FILE_EXISTS || FORCE_UPDATE) {
-        writeFile(CSS, FOLDER, NAME, 'style', 'jsx', METADATA, TEMPLATES);
-      }
-    }
+    // // Write React component - is skipped by default if file already exists
+    // if (!SKIP_REACT) {
+    //   const FILE_EXISTS = fs.existsSync(`${FOLDER}/${_NAME}.jsx`);
+    //   if (!FILE_EXISTS || FORCE_UPDATE) {
+    //     writeFile(HTML, FOLDER, NAME, 'component', 'jsx', METADATA, TEMPLATES);
+    //   }
+    // }
 
-    // Write CSS - is always overwritten
-    if (!SKIP_CSS) writeFile(CSS, FOLDER, NAME, 'css', FORMAT, METADATA, TEMPLATES);
+    // // Write Styled component - is skipped by default if file already exists
+    // if (!SKIP_STYLED) {
+    //   const FILE_EXISTS = fs.existsSync(`${FOLDER}/${_NAME}Styled.jsx`);
+    //   if (!FILE_EXISTS || FORCE_UPDATE) {
+    //     writeFile(CSS, FOLDER, NAME, 'style', 'jsx', METADATA, TEMPLATES);
+    //   }
+    // }
 
-    // Write Storybook component - is skipped by default if file already exists
-    if (!SKIP_STORYBOOK) {
-      const FILE_EXISTS = fs.existsSync(`${FOLDER}/${_NAME}.stories.js`);
-      if (!FILE_EXISTS || FORCE_UPDATE) {
-        writeFile(CSS, FOLDER, NAME, 'story', 'js', METADATA, TEMPLATES);
-      }
-    }
+    // // Write CSS - is always overwritten
+    // if (!SKIP_CSS) writeFile(CSS, FOLDER, NAME, 'css', FORMAT, METADATA, TEMPLATES);
 
-    // Write description markdown file - is always overwritten
-    if (!SKIP_DESCRIPTION) writeFile(DESCRIPTION, FOLDER, NAME, 'description', 'md');
+    // // Write Storybook component - is skipped by default if file already exists
+    // if (!SKIP_STORYBOOK) {
+    //   const FILE_EXISTS = fs.existsSync(`${FOLDER}/${_NAME}.stories.js`);
+    //   if (!FILE_EXISTS || FORCE_UPDATE) {
+    //     writeFile(CSS, FOLDER, NAME, 'story', 'js', METADATA, TEMPLATES);
+    //   }
+    // }
+
+    // // Write description markdown file - is always overwritten
+    // if (!SKIP_DESCRIPTION) writeFile(DESCRIPTION, FOLDER, NAME, 'description', 'md');
   });
 
   return true;

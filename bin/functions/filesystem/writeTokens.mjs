@@ -25,7 +25,6 @@ export async function writeTokens(tokens, config) {
   return Promise.all(
     tokens.map(async (token) => {
       const tokenName = camelize(token.name);
-
       if (acceptedTokenTypes.includes(tokenName.toLowerCase())) {
         const PROCESSED_TOKEN = processTokens(token, tokenName, config);
 

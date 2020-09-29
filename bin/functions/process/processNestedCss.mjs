@@ -66,16 +66,16 @@ function cleanArrays(classNames, classContent) {
   for (let i = 0; i <= totalClassCount / 2 - 1; i++) {
     // Styling
     let arrA = classContent[i].split(/\n/gi);
-    arrA = arrA.filter(item => item); // Clean garbage
-    arrA = arrA.filter(item => item !== '}');
+    arrA = arrA.filter((item) => item); // Clean garbage
+    arrA = arrA.filter((item) => item !== '}');
 
     // Typography
     let arrB = [];
     // Allow skipping "implicit matches" for typography
     if (classContent[i + totalClassCount / 2]) {
       arrB = classContent[i + totalClassCount / 2].split(/\n/gi);
-      arrB = arrB.filter(item => item);
-      arrB = arrB.filter(item => item !== '}');
+      arrB = arrB.filter((item) => item);
+      arrB = arrB.filter((item) => item !== '}');
     }
 
     // Collated and reduced from duplicates
@@ -125,11 +125,11 @@ function getUniqueValues(arrays, intersections) {
 
   let uniqueValues = [];
 
-  arrays.map(arr => {
+  arrays.map((arr) => {
     // Collect properties per class, such as all for ".ButtonError"
     let classArray = [];
 
-    arr.map(i => {
+    arr.map((i) => {
       if (!intersections.includes(i)) {
         classArray.push(i);
       }
@@ -159,13 +159,13 @@ function createCssString(intersections, uniqueValues) {
 
   let str = ``;
 
-  intersections.forEach(i => {
+  intersections.forEach((i) => {
     str += `${i}\n`;
   });
 
   str += `\n`;
 
-  uniqueValues.forEach(arr => {
+  uniqueValues.forEach((arr) => {
     arr.forEach((i, index) => {
       // Yep, you'd wish we set class names or CSS pseudo-selector before we came here,
       // but this is the easiest I've found without breaking everything above.

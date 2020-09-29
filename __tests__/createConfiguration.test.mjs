@@ -16,7 +16,7 @@ test('It should return a valid merged configuration if given a path to an RC fil
       outputFolderTokens: 'tokens',
       outputFormatGraphics: 'svg',
       outputScaleGraphics: 1,
-      outputTokenFormat: 'mjs',
+      outputTokenFormat: 'js',
       outputTokenDataType: null,
       recompileLocal: false,
       remSize: 16,

@@ -22,16 +22,10 @@ export function setupColorTokens(colorFrame) {
   if (!colorFrame.children) throw new Error(errorSetupColorTokensNoChildren);
 
   let colors = {};
-
   colorFrame.children.forEach((color) => {
     if (!color.fills) throw new Error(errorSetupColorTokensNoFills);
-    /*
-    if (!color.fills[0]) throw new Error(errorSetupColorTokensNoFills);
-    if (!color.fills[0].color) throw new Error(errorSetupColorTokensNoFills);
-    if (!color.fills[0].color.r) throw new Error(errorSetupColorTokensNoFills);
-    if (!color.fills[0].color.g) throw new Error(errorSetupColorTokensNoFills);
-		if (!color.fills[0].color.b) throw new Error(errorSetupColorTokensNoFills);
-		*/
+    // we are not supporting gradients at the moment
+    if (color.fills[0].type === 'GRADIENT_LINEAR') return;
 
     // It seems RGBA alpha is actually not coming from "color.a", so the below fixes that
     const ALPHA = color.fills[0].opacity ? color.fills[0].opacity : color.fills[0].color.a;

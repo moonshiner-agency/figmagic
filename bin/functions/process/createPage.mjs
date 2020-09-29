@@ -16,7 +16,7 @@ export function createPage(figmaPages, matchingPageName) {
   let correctPage = {};
   let isMatchFound = false;
 
-  figmaPages.forEach(page => {
+  figmaPages.forEach((page) => {
     // Loop only until match is found
     if (!isMatchFound && page.name === matchingPageName) {
       correctPage = page;
@@ -24,4 +24,18 @@ export function createPage(figmaPages, matchingPageName) {
   });
 
   return correctPage;
+}
+
+export function createPages(figmaPages, matchingPageNames = []) {
+  if (!figmaPages || !(figmaPages.length > 0)) throw new Error(errorCreatePage);
+
+  const correctPages = [];
+
+  figmaPages.forEach((page) => {
+    if (matchingPageNames.includes(page.name)) {
+      correctPages.push(page);
+    }
+  });
+
+  return correctPages;
 }

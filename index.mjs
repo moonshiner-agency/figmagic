@@ -11,7 +11,7 @@ import { writeFile } from './bin/functions/filesystem/writeFile.mjs';
 import { writeElements } from './bin/functions/filesystem/writeElements.mjs';
 import { writeGraphics } from './bin/functions/filesystem/writeGraphics.mjs';
 
-import { createPage } from './bin/functions/process/createPage.mjs';
+import { createPages } from './bin/functions/process/createPage.mjs';
 import { processGraphics } from './bin/functions/process/processGraphics.mjs';
 import { processElements } from './bin/functions/process/processElements.mjs';
 
@@ -42,7 +42,9 @@ export default async function figmagic({ CLI_ARGS, CWD } = { CLI_ARGS: [], CWD: 
     outputFolderTokens,
     outputFolderGraphics,
     outputFolderElements,
-    //outputFolderComponents,
+    tokenPages,
+    graphicPages,
+    elementPages,
     outputFileName
   } = CONFIG;
 
@@ -54,7 +56,6 @@ export default async function figmagic({ CLI_ARGS, CWD } = { CLI_ARGS: [], CWD: 
       // Attempt to get data
       try {
         const _DATA = await getFromApi(token, url);
-
         // If there's no data or something went funky, eject
         if (!_DATA || _DATA.status === 403) throw new Error(errorGetData);
 
@@ -88,31 +89,47 @@ export default async function figmagic({ CLI_ARGS, CWD } = { CLI_ARGS: [], CWD: 
 
   // Process tokens
   console.log(msgWriteTokens);
-  const TOKENS_PAGE = createPage(DATA.document.children, 'Design Tokens');
+  const TOKENS_PAGES = createPages(DATA.document.children, tokenPages);
   await trash([`./${outputFolderTokens}`]);
   await createFolder(outputFolderTokens);
-  await writeTokens(TOKENS_PAGE.children, CONFIG);
+
+  await Promise.all(TOKENS_PAGES.map(async (page) => await writeTokens(page.children, CONFIG)));
 
   const COMPONENTS = DATA.components;
   //const STYLES = DATA.styles;
-
   // Syncing elements
   if (syncElements) {
     console.log(msgSyncElements);
-    const ELEMENTS_PAGE = createPage(DATA.document.children, 'Elements');
-    const elements = await processElements(ELEMENTS_PAGE.children, COMPONENTS, CONFIG);
+    const ELEMENTS_PAGES = createPages(DATA.document.children, elementPages);
     await createFolder(outputFolderElements);
-    await writeElements(elements, CONFIG);
+    await Promise.all(
+      ELEMENTS_PAGES.map(async (page) => {
+        // console.log(page.children);
+        const elements = await processElements(page.children, COMPONENTS, CONFIG);
+        console.log(elements);
+
+        return await writeElements(elements, CONFIG);
+      })
+    );
   }
 
   // Syncing graphics
   if (syncGraphics) {
     console.log(msgSyncGraphics);
-    const GRAPHICS_PAGE = createPage(DATA.document.children, 'Graphics');
+    const GRAPHICS_PAGES = createPages(DATA.document.children, graphicPages);
+
     await trash([`./${outputFolderGraphics}`]);
     await createFolder(outputFolderGraphics);
-    const FILE_LIST = await processGraphics(GRAPHICS_PAGE.children, CONFIG);
-    await writeGraphics(FILE_LIST, CONFIG);
+
+    await Promise.all(
+      GRAPHICS_PAGES.map(async (page) => {
+        const FILE_LIST = await processGraphics(page.children, CONFIG);
+        return await writeGraphics(FILE_LIST, CONFIG);
+      })
+    );
+
+    // const FILE_LIST = await processGraphics(GRAPHICS_PAGES.children, CONFIG);
+    // await writeGraphics(FILE_LIST, CONFIG);
   }
 
   // All went well

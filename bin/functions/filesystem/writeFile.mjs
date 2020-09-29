@@ -6,12 +6,7 @@ import { createImportStringFromList } from '../helpers/createImportStringFromLis
 import { createEnumStringOutOfObject } from '../helpers/createEnumStringOutOfObject.mjs';
 
 import { msgGeneratedFileWarning } from '../../meta/messages.mjs';
-import {
-  errorWriteFile,
-  errorWriteFileWrongType,
-  errorWrite,
-  errorPrepareWrite
-} from '../../meta/errors.mjs';
+import { errorWriteFile, errorWriteFileWrongType, errorPrepareWrite } from '../../meta/errors.mjs';
 
 /**
  * Exposed function that handles writing files to disk
@@ -28,7 +23,7 @@ import {
  * @param {object} [templates] - Object of templates
  * @throws {errorWriteFile} - Throws error if missing file, path, name or type arguments
  */
-export async function writeFile(file, path, name, type, format = 'mjs', metadata, templates) {
+export async function writeFile(file, path, name, type, format = 'js', metadata, templates) {
   if (!file || !path || !name || !type) throw new Error(errorWriteFile);
 
   const _TYPE = type.toLowerCase();
@@ -99,8 +94,8 @@ async function prepareWrite(type, file, path, name, format, metadata, templates)
         return metadata.html;
       } else return '';
     } else return '';
-	})();
-	*/
+  })();
+  */
 
   const TEXT = (() => {
     if (metadata) {
