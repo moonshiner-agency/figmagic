@@ -22,6 +22,7 @@ export function setupColorTokens(colorFrame) {
   if (!colorFrame.children) throw new Error(errorSetupColorTokensNoChildren);
 
   let colors = {};
+
   colorFrame.children.forEach((color) => {
     if (!color.fills) throw new Error(errorSetupColorTokensNoFills);
     // we are not supporting gradients at the moment

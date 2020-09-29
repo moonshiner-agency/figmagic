@@ -89,6 +89,7 @@ export default async function figmagic({ CLI_ARGS, CWD } = { CLI_ARGS: [], CWD: 
 
   // Process tokens
   console.log(msgWriteTokens);
+
   const TOKENS_PAGES = createPages(DATA.document.children, tokenPages);
   await trash([`./${outputFolderTokens}`]);
   await createFolder(outputFolderTokens);
