@@ -1,5 +1,5 @@
 export const acceptedTranslatedTokenTypes = [
-  'abstände',
+  'abstaende',
   'breiten',
   'palette',
   'schatten',

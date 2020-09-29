@@ -20,7 +20,7 @@ import { ignoreElementsKeywords } from '../../meta/ignoreElementsKeywords.mjs';
 
 const alias = [
   {
-    name: 'borderwidth',
+    name: 'borderWidths',
     alias: ['breiten', 'borderwidth', 'borderwidths']
   },
   {
@@ -28,27 +28,27 @@ const alias = [
     alias: ['palette', 'color', 'colors', 'colour', 'colours']
   },
   {
-    name: 'fontfamily',
+    name: 'fontFamily',
     alias: ['fontfamily', 'fontfamilies']
   },
   {
-    name: 'fontsizes',
+    name: 'fontSizes',
     alias: ['fontsize', 'fontsizes']
   },
   {
-    name: 'fontweights',
+    name: 'fontWeights',
     alias: ['fontweight', 'fontweights']
   },
   {
-    name: 'letterspacings',
+    name: 'letterSpacings',
     alias: ['letterspacing', 'letterspacings']
   },
   {
-    name: 'lineheights',
+    name: 'lineHeights',
     alias: ['lineheight', 'lineheights']
   },
   {
-    name: 'mediaqueries',
+    name: 'mediaQueries',
     alias: ['mediaquery', 'mediaqueries']
   },
   {
@@ -65,14 +65,14 @@ const alias = [
   },
   {
     name: 'spacings',
-    alias: ['abstände', 'space', 'spaces', 'spacing', 'spacings']
+    alias: ['abstaende', 'space', 'spaces', 'spacing', 'spacings']
   },
   {
     name: 'zindices',
     alias: ['zindex', 'zindices']
   },
   {
-    name: 'transitions',
+    name: 'durations',
     alias: [
       'transitions',
       'duration',
@@ -121,7 +121,7 @@ const processGroup = ({ name, sheet, config }) => {
   console.log(description);
   sheet = filterSheet(sheet);
   switch (name) {
-    case 'borderwidth': {
+    case 'borderWidths': {
       processedTokens = setupBorderWidthTokens(sheet);
       break;
     }
@@ -129,30 +129,30 @@ const processGroup = ({ name, sheet, config }) => {
       processedTokens = setupColorTokens(sheet);
       break;
     }
-    case 'fontfamily': {
+    case 'fontFamily': {
       if (!config) throw new Error(errorProcessTokensNoConfig);
       processedTokens = setupFontTokens(sheet, config.usePostscriptFontNames);
       break;
     }
-    case 'fontsizes': {
+    case 'fontSizes': {
       if (!config) throw new Error(errorProcessTokensNoConfig);
       processedTokens = setupFontSizeTokens(sheet, config.fontUnit, config.remSize);
       break;
     }
-    case 'fontweights': {
+    case 'fontWeights': {
       processedTokens = setupFontWeightTokens(sheet);
       break;
     }
-    case 'letterspacings': {
+    case 'letterSpacings': {
       if (!config) throw new Error(errorProcessTokensNoConfig);
       processedTokens = setupLetterSpacingTokens(sheet, config.letterSpacingUnit);
       break;
     }
-    case 'lineheights': {
+    case 'lineHeights': {
       processedTokens = setupLineHeightTokens(sheet);
       break;
     }
-    case 'mediaqueries': {
+    case 'mediaQueries': {
       processedTokens = setupMediaQueryTokens(sheet);
       break;
     }
@@ -178,7 +178,7 @@ const processGroup = ({ name, sheet, config }) => {
       processedTokens = setupZindexTokens(sheet);
       break;
     }
-    case 'transitions': {
+    case 'durations': {
       processedTokens = setupDurationTokens(sheet);
       break;
     }
@@ -191,6 +191,7 @@ const processGroup = ({ name, sheet, config }) => {
       break;
     }
   }
+
   return Object.entries(processedTokens).reduce((res, [key, value]) => {
     res[key] = { value };
     return res;
@@ -231,7 +232,6 @@ export function processTokens(sheet, name, config) {
   // Filter out elements that contain ignore keywords in their name
   sheet = filterSheet(sheet);
   const groups = sheet.children.filter((item) => item.type === 'GROUP');
-
   const _NAME = alias.find((item) => {
     return item.alias.includes(name.toLowerCase());
   }).name;
