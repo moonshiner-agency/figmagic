@@ -10,6 +10,7 @@ import { writeTokens } from './bin/functions/filesystem/writeTokens.mjs';
 import { writeFile } from './bin/functions/filesystem/writeFile.mjs';
 import { writeElements } from './bin/functions/filesystem/writeElements.mjs';
 import { writeGraphics } from './bin/functions/filesystem/writeGraphics.mjs';
+import { writeDescriptions } from './bin/functions/filesystem/writeDescriptions.mjs';
 
 import { createPages } from './bin/functions/process/createPage.mjs';
 import { processGraphics } from './bin/functions/process/processGraphics.mjs';
@@ -38,13 +39,16 @@ export default async function figmagic({ CLI_ARGS, CWD } = { CLI_ARGS: [], CWD: 
     recompileLocal,
     syncGraphics,
     syncElements,
+    syncDescriptions,
     outputFolderBaseFile,
     outputFolderTokens,
+    outputFolderDescriptions,
     outputFolderGraphics,
     outputFolderElements,
     tokenPages,
     graphicPages,
     elementPages,
+    descriptionPages,
     outputFileName
   } = CONFIG;
 
@@ -89,15 +93,23 @@ export default async function figmagic({ CLI_ARGS, CWD } = { CLI_ARGS: [], CWD: 
 
   // Process tokens
   console.log(msgWriteTokens);
-
-  const TOKENS_PAGES = createPages(DATA.document.children, tokenPages);
+  const pagesTemp = DATA.document.children;
+  const TOKENS_PAGES = createPages(pagesTemp, tokenPages);
   await trash([`./${outputFolderTokens}`]);
   await createFolder(outputFolderTokens);
-
   await Promise.all(TOKENS_PAGES.map(async (page) => await writeTokens(page.children, CONFIG)));
 
+  if (syncDescriptions) {
+    const DESCRIPTION_PAGES = createPages(DATA.document.children, descriptionPages);
+    await trash([`./${outputFolderDescriptions}`]);
+    await createFolder(outputFolderDescriptions);
+    await Promise.all(
+      DESCRIPTION_PAGES.map(async (page) => await writeDescriptions(page.children, CONFIG))
+    );
+  }
+
   const COMPONENTS = DATA.components;
-  //const STYLES = DATA.styles;
+  // const STYLES = DATA.styles;
   // Syncing elements
   if (syncElements) {
     console.log(msgSyncElements);
@@ -105,10 +117,7 @@ export default async function figmagic({ CLI_ARGS, CWD } = { CLI_ARGS: [], CWD: 
     await createFolder(outputFolderElements);
     await Promise.all(
       ELEMENTS_PAGES.map(async (page) => {
-        // console.log(page.children);
         const elements = await processElements(page.children, COMPONENTS, CONFIG);
-        console.log(elements);
-
         return await writeElements(elements, CONFIG);
       })
     );

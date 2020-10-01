@@ -40,6 +40,9 @@ export function parseCliArgs(argsArray) {
           case '--elementPages':
             accumulatedConfig.elementPages = argsArray[index + 1];
             break;
+          case '--descriptionPages':
+            accumulatedConfig.descriptionPages = argsArray[index + 1];
+            break;
           // Toggle debug mode if requested
           case '--debug':
             accumulatedConfig.debugMode = true;
@@ -55,6 +58,9 @@ export function parseCliArgs(argsArray) {
           // Sync elements from "Elements" page in Figma
           case '--syncElements':
             accumulatedConfig.syncElements = true;
+            break;
+          case '--syncDescriptions':
+            accumulatedConfig.syncDescriptions = true;
             break;
           // Skip file generation: React
           case '--skipReact':
@@ -84,13 +90,6 @@ export function parseCliArgs(argsArray) {
               storybook: true
             };
             break;
-          // Skip file generation: Markdown description
-          case '--skipDescription':
-            accumulatedConfig.skipFileGeneration = {
-              ...accumulatedConfig.skipFileGeneration,
-              description: true
-            };
-            break;
           // Force update all elements
           case '--forceUpdate':
             accumulatedConfig.skipFileGeneration = {
@@ -107,6 +106,11 @@ export function parseCliArgs(argsArray) {
               outputTokenFormat = defaultConfig.outputTokenFormat;
             }
             accumulatedConfig.outputTokenFormat = outputTokenFormat;
+            break;
+          }
+          case '--outputDescriptionFormat': {
+            let outputDescriptionFormat = argsArray[index + 1].toLowerCase();
+            accumulatedConfig.outputDescriptionFormat = outputDescriptionFormat;
             break;
           }
           // Check and handle font unit switch
@@ -172,6 +176,10 @@ export function parseCliArgs(argsArray) {
           case '--outputFolderTokens':
           case '-tokens':
             accumulatedConfig.outputFolderTokens = argsArray[index + 1];
+            break;
+          case '--outputFolderDescriptions':
+          case '-description':
+            accumulatedConfig.outputFolderDescriptions = argsArray[index + 1];
             break;
           case '--outputFolderGraphics':
           case '-graphics':

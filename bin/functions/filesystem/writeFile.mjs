@@ -185,9 +185,13 @@ async function prepareWrite(type, file, path, name, format, metadata, templates)
     fileContent = `${template};`;
     filePath += `${SUFFIX}.${format}`;
   }
-  // Markdown description
+  // description
   else if (type === 'description') {
-    fileContent = `<!--${msgGeneratedFileWarning}-->\n${file}`;
+    fileContent = `// ${msgGeneratedFileWarning}\n\nconst ${name} = ${JSON.stringify(
+      file,
+      null,
+      ' '
+    )}\n\nmodule.exports = ${name};`;
     filePath += `.description.${format}`;
   }
 
@@ -206,7 +210,7 @@ async function prepareWrite(type, file, path, name, format, metadata, templates)
 async function write(filePath, fileContent) {
   return await new Promise((resolve, reject) => {
     try {
-      fs.writeFileSync(filePath, fileContent, 'utf-8');
+      fs.writeFileSync(filePath, fileContent, { flag: 'a' });
       resolve(true);
     } catch (error) {
       reject(error);

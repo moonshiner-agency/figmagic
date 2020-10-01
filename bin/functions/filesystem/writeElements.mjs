@@ -40,7 +40,6 @@ export async function writeElements(elements, config) {
     const SKIP_STYLED = config.skipFileGeneration.skipStyled;
     const SKIP_CSS = config.skipFileGeneration.skipCss;
     const SKIP_STORYBOOK = config.skipFileGeneration.skipStorybook;
-    const SKIP_DESCRIPTION = config.skipFileGeneration.skipDescription;
     const FORCE_UPDATE = config.skipFileGeneration.forceUpdate;
 
     // Ensure that name is processed like the "write()" function(s) do, so filename matching is same
@@ -74,9 +73,6 @@ export async function writeElements(elements, config) {
     //     writeFile(CSS, FOLDER, NAME, 'story', 'js', METADATA, TEMPLATES);
     //   }
     // }
-
-    // // Write description markdown file - is always overwritten
-    // if (!SKIP_DESCRIPTION) writeFile(DESCRIPTION, FOLDER, NAME, 'description', 'md');
   });
 
   return true;

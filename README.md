@@ -317,7 +317,6 @@ Below is a complete set of what you can configure, together with the defaults.
     skipStyled: false,
     skipCss: false,
     skipStorybook: false,
-    skipDescription: false,
     forceUpdate: true
   },
   spacingUnit: 'rem',
@@ -387,12 +386,6 @@ Default is `false`. Skip creating CSS file when syncing elements.
 `figmagic --skipStorybook`
 
 Default is `false`. Skip creating Storybook file when syncing elements.
-
-#### Skip file generation: Markdown description
-
-`figmagic --skipDescription`
-
-Default is `false`. Skip creating Markdown file when syncing elements.
 
 #### Force update all elements
 

@@ -30,7 +30,6 @@ export function createPages(figmaPages, matchingPageNames = []) {
   if (!figmaPages || !(figmaPages.length > 0)) throw new Error(errorCreatePage);
 
   const correctPages = [];
-
   figmaPages.forEach((page) => {
     if (matchingPageNames.includes(page.name)) {
       correctPages.push(page);

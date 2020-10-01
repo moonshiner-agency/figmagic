@@ -18,7 +18,7 @@ import { setupEasingTokens } from '../tokens/setupEasingTokens.mjs';
 import { errorProcessTokens, errorProcessTokensNoConfig } from '../../meta/errors.mjs';
 import { ignoreElementsKeywords } from '../../meta/ignoreElementsKeywords.mjs';
 
-const alias = [
+export const aliasMapping = [
   {
     name: 'borderWidths',
     alias: ['breiten', 'borderwidth', 'borderwidths']
@@ -95,31 +95,13 @@ const alias = [
     ]
   },
   {
-    name: 'delays',
-    alias: [
-      'delay',
-      'delays',
-      'animation delay',
-      'animation delays',
-      'motion delay',
-      'motion delays'
-    ]
-  },
-  {
     name: 'easing',
     alias: ['easing', 'animation easing', 'motion easing']
   }
 ];
 const processGroup = ({ name, sheet, config }) => {
   let processedTokens = undefined;
-  let description = null;
-  try {
-    description = sheet.children.find((child) => child.name === 'description').characters || null;
-  } catch (e) {
-    description = null;
-  }
-  console.log(description);
-  sheet = filterSheet(sheet);
+
   switch (name) {
     case 'borderWidths': {
       processedTokens = setupBorderWidthTokens(sheet);
@@ -197,10 +179,10 @@ const processGroup = ({ name, sheet, config }) => {
     return res;
   }, {});
 };
-const filterSheet = (sheet) => {
-  sheet.children = sheet.children.filter((item) => {
-    let shouldInclude = true;
 
+const filterSheetChildren = (sheetChildren) => {
+  return [...sheetChildren].filter((item) => {
+    let shouldInclude = true;
     for (let i = 0; i < ignoreElementsKeywords.length; i++) {
       const keywordToIgnore = ignoreElementsKeywords[i];
 
@@ -212,7 +194,6 @@ const filterSheet = (sheet) => {
 
     return shouldInclude;
   });
-  return sheet;
 };
 /**
  * Process tokens
@@ -228,22 +209,22 @@ const filterSheet = (sheet) => {
  */
 export function processTokens(sheet, name, config) {
   if (!sheet || !name) throw new Error(errorProcessTokens);
-  // debugger;
+
   // Filter out elements that contain ignore keywords in their name
-  sheet = filterSheet(sheet);
-  const groups = sheet.children.filter((item) => item.type === 'GROUP');
-  const _NAME = alias.find((item) => {
+  const filteredSheet = { ...sheet, children: filterSheetChildren(sheet.children) };
+  const groups = filteredSheet.children.filter((item) => item.type === 'GROUP');
+  const _NAME = aliasMapping.find((item) => {
     return item.alias.includes(name.toLowerCase());
   }).name;
 
   if (!groups.length) {
-    return { [_NAME]: processGroup({ name: _NAME, sheet, config }) };
+    return { [_NAME]: processGroup({ name: _NAME, sheet: filteredSheet, config }) };
   }
 
   let tokenGroups = {};
 
   groups.forEach((groupSheet) => {
-    const _NAME = alias.find((item) => {
+    const _NAME = aliasMapping.find((item) => {
       return item.alias.includes(name.toLowerCase());
     }).name;
     tokenGroups = {

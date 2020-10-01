@@ -109,19 +109,6 @@ test('It should return true for skipFileGeneration.storybook if passing "--skipS
 });
 
 /*
- * Skip file generation: Markdown description
- */
-test('It should return true for skipFileGeneration.styled if passing "--skipDescription"', () => {
-  expect(parseCliArgs(['--skipDescription'])).toEqual(
-    expect.objectContaining({
-      skipFileGeneration: expect.objectContaining({
-        description: true
-      })
-    })
-  );
-});
-
-/*
  * Force update
  */
 test('It should return true for skipFileGeneration.forceUpdate if passing "--forceUpdate"', () => {
@@ -138,19 +125,10 @@ test('It should return true for skipFileGeneration.forceUpdate if passing "--for
  * Skip file generation: all
  */
 test('It should return true for all skipFileGeneration properties, if passing all --skip flags', () => {
-  expect(
-    parseCliArgs([
-      '--skipReact',
-      '--skipStyled',
-      '--skipCss',
-      '--skipStorybook',
-      '--skipDescription'
-    ])
-  ).toEqual(
+  expect(parseCliArgs(['--skipReact', '--skipStyled', '--skipCss', '--skipStorybook'])).toEqual(
     expect.objectContaining({
       skipFileGeneration: expect.objectContaining({
         css: true,
-        description: true,
         react: true,
         storybook: true,
         styled: true
