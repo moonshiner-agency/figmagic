@@ -28,7 +28,7 @@ export function setupDurationTokens(durationFrame) {
 
     const name = camelize(type.name);
 
-    durationObject[name] = parseFloat(type.characters);
+    durationObject[name] = type.characters;
   });
 
   return durationObject;

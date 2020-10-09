@@ -28,10 +28,12 @@ export const defaultConfig = {
   syncElements: false,
   syncGraphics: false,
   syncDescriptions: false,
+  descriptionTags: ['description'],
   templates: {
     templatePathReact: 'templates/react.jsx',
     templatePathStyled: 'templates/styled.jsx',
     templatePathStorybook: 'templates/story.js'
   },
-  usePostscriptFontNames: false
+  usePostscriptFontNames: false,
+  removeOld: false
 };

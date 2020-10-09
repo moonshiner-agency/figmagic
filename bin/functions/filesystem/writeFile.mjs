@@ -208,12 +208,17 @@ async function prepareWrite(type, file, path, name, format, metadata, templates)
  * @returns {Promise} - Returns promise from wrapped fs.writeFile
  */
 async function write(filePath, fileContent) {
-  return await new Promise((resolve, reject) => {
-    try {
-      fs.writeFileSync(filePath, fileContent, { flag: 'a' });
-      resolve(true);
-    } catch (error) {
-      reject(error);
+  return await fs.writeFile(filePath, fileContent, (err) => {
+    if (err) {
+      throw err;
     }
   });
+  // return await new Promise((resolve, reject) => {
+  //   try {
+  //     fs.writeFileSync(filePath, fileContent, { flag: 'a' });
+  //     resolve(true);
+  //   } catch (error) {
+  //     reject(error);
+  //   }
+  // });
 }

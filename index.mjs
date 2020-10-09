@@ -49,7 +49,8 @@ export default async function figmagic({ CLI_ARGS, CWD } = { CLI_ARGS: [], CWD: 
     graphicPages,
     elementPages,
     descriptionPages,
-    outputFileName
+    outputFileName,
+    removeOld
   } = CONFIG;
 
   const DATA = await (async () => {
@@ -85,61 +86,71 @@ export default async function figmagic({ CLI_ARGS, CWD } = { CLI_ARGS: [], CWD: 
   // Write base Figma JSON if we are pulling from the web
   if (!recompileLocal) {
     console.log(msgWriteBaseFile);
-    const DATA = await getFromApi(token, url);
-    await trash([`./${outputFolderBaseFile}`]);
+    if (removeOld) {
+      await trash([`./${outputFolderBaseFile}`]);
+    }
     await createFolder(outputFolderBaseFile);
     await writeFile(JSON.stringify(DATA), outputFolderBaseFile, outputFileName, 'raw');
   }
 
   // Process tokens
-  console.log(msgWriteTokens);
   const pagesTemp = DATA.document.children;
   const TOKENS_PAGES = createPages(pagesTemp, tokenPages);
-  await trash([`./${outputFolderTokens}`]);
-  await createFolder(outputFolderTokens);
-  await Promise.all(TOKENS_PAGES.map(async (page) => await writeTokens(page.children, CONFIG)));
+  if (TOKENS_PAGES.length > 0) {
+    console.log(msgWriteTokens);
+    if (removeOld) {
+      await trash([`./${outputFolderTokens}`]);
+    }
+    await createFolder(outputFolderTokens);
+    await Promise.all(TOKENS_PAGES.map(async (page) => await writeTokens(page.children, CONFIG)));
+  }
 
   if (syncDescriptions) {
     const DESCRIPTION_PAGES = createPages(DATA.document.children, descriptionPages);
-    await trash([`./${outputFolderDescriptions}`]);
-    await createFolder(outputFolderDescriptions);
-    await Promise.all(
-      DESCRIPTION_PAGES.map(async (page) => await writeDescriptions(page.children, CONFIG))
-    );
+    if (DESCRIPTION_PAGES.length > 0) {
+      if (removeOld) {
+        await trash([`./${outputFolderDescriptions}`]);
+      }
+      await createFolder(outputFolderDescriptions);
+      await writeDescriptions(DESCRIPTION_PAGES, CONFIG);
+    }
   }
 
   const COMPONENTS = DATA.components;
   // const STYLES = DATA.styles;
   // Syncing elements
   if (syncElements) {
-    console.log(msgSyncElements);
     const ELEMENTS_PAGES = createPages(DATA.document.children, elementPages);
-    await createFolder(outputFolderElements);
-    await Promise.all(
-      ELEMENTS_PAGES.map(async (page) => {
-        const elements = await processElements(page.children, COMPONENTS, CONFIG);
-        return await writeElements(elements, CONFIG);
-      })
-    );
+    if (ELEMENTS_PAGES.length > 0) {
+      console.log(msgSyncElements);
+      // await createFolder(outputFolderElements);
+      // await writeElements(ELEMENTS_PAGES, CONFIG);
+      // await Promise.all(
+      //   ELEMENTS_PAGES.map(async (page) => {
+      //     const elements = await processElements(page.children, COMPONENTS, CONFIG);
+      //     return await writeElements(elements, CONFIG);
+      //   })
+      // );
+    }
   }
 
   // Syncing graphics
   if (syncGraphics) {
-    console.log(msgSyncGraphics);
     const GRAPHICS_PAGES = createPages(DATA.document.children, graphicPages);
 
-    await trash([`./${outputFolderGraphics}`]);
-    await createFolder(outputFolderGraphics);
-
-    await Promise.all(
-      GRAPHICS_PAGES.map(async (page) => {
-        const FILE_LIST = await processGraphics(page.children, CONFIG);
-        return await writeGraphics(FILE_LIST, CONFIG);
-      })
-    );
-
-    // const FILE_LIST = await processGraphics(GRAPHICS_PAGES.children, CONFIG);
-    // await writeGraphics(FILE_LIST, CONFIG);
+    if (GRAPHICS_PAGES.length > 0) {
+      console.log(msgSyncGraphics);
+      if (removeOld) {
+        await trash([`./${outputFolderGraphics}`]);
+      }
+      await createFolder(outputFolderGraphics);
+      await Promise.all(
+        GRAPHICS_PAGES.map(async (page) => {
+          const FILE_LIST = await processGraphics(page.children, CONFIG);
+          return await writeGraphics(FILE_LIST, CONFIG);
+        })
+      );
+    }
   }
 
   // All went well

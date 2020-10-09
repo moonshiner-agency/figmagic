@@ -1,8 +1,7 @@
 import { camelize } from '../helpers/camelize.mjs';
-import { aliasMapping } from '../process/processTokens.mjs';
 import { writeFile } from './writeFile.mjs';
 import { errorWriteDescription, errorWriteDescriptionNoSettings } from '../../meta/errors.mjs';
-import { processDescriptions } from '../process/processDescriptions.mjs';
+import { processDescriptions, getTransformedName } from '../process/processDescriptions.mjs';
 
 /**
  * Write description to file
@@ -23,14 +22,10 @@ export async function writeDescriptions(descriptionPages, config) {
 
   return Promise.all(
     descriptionPages.map(async (d) => {
-      const translatedName = aliasMapping.find((item) => {
-        return item.alias.includes(d.name.toLowerCase());
-      }) || { name: d.name };
-      translatedName.name = camelize(translatedName.name);
-
-      const PROCESSED_DESCRIPTIONS = processDescriptions(d, translatedName.name, config);
+      const PROCESSED_DESCRIPTIONS = processDescriptions(d, config);
       if (PROCESSED_DESCRIPTIONS.length > 0) {
-        const name = translatedName.name;
+        const translatedName = getTransformedName(d.name);
+        const name = camelize(translatedName);
         const grouped = PROCESSED_DESCRIPTIONS.reduce((res, curr) => {
           if (!res[name]) {
             res[name] = {};

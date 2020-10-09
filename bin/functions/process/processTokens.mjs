@@ -17,88 +17,8 @@ import { setupEasingTokens } from '../tokens/setupEasingTokens.mjs';
 
 import { errorProcessTokens, errorProcessTokensNoConfig } from '../../meta/errors.mjs';
 import { ignoreElementsKeywords } from '../../meta/ignoreElementsKeywords.mjs';
+import { tokenAliasMapping } from '../../meta/aliasMapping.mjs';
 
-export const aliasMapping = [
-  {
-    name: 'borderWidths',
-    alias: ['breiten', 'borderwidth', 'borderwidths']
-  },
-  {
-    name: 'colors',
-    alias: ['palette', 'color', 'colors', 'colour', 'colours']
-  },
-  {
-    name: 'fontFamily',
-    alias: ['fontfamily', 'fontfamilies']
-  },
-  {
-    name: 'fontSizes',
-    alias: ['fontsize', 'fontsizes']
-  },
-  {
-    name: 'fontWeights',
-    alias: ['fontweight', 'fontweights']
-  },
-  {
-    name: 'letterSpacings',
-    alias: ['letterspacing', 'letterspacings']
-  },
-  {
-    name: 'lineHeights',
-    alias: ['lineheight', 'lineheights']
-  },
-  {
-    name: 'mediaQueries',
-    alias: ['mediaquery', 'mediaqueries']
-  },
-  {
-    name: 'opacities',
-    alias: ['opacity', 'opacities']
-  },
-  {
-    name: 'radii',
-    alias: ['radius', 'radii']
-  },
-  {
-    name: 'shadows',
-    alias: ['schatten', 'shadow', 'shadows']
-  },
-  {
-    name: 'spacings',
-    alias: ['abstaende', 'space', 'spaces', 'spacing', 'spacings']
-  },
-  {
-    name: 'zindices',
-    alias: ['zindex', 'zindices']
-  },
-  {
-    name: 'durations',
-    alias: [
-      'transitions',
-      'duration',
-      'durations',
-      'animation duration',
-      'animation durations',
-      'motion duration',
-      'motion durations'
-    ]
-  },
-  {
-    name: 'delays',
-    alias: [
-      'delay',
-      'delays',
-      'animation delay',
-      'animation delays',
-      'motion delay',
-      'motion delays'
-    ]
-  },
-  {
-    name: 'easing',
-    alias: ['easing', 'animation easing', 'motion easing']
-  }
-];
 const processGroup = ({ name, sheet, config }) => {
   let processedTokens = undefined;
 
@@ -173,7 +93,6 @@ const processGroup = ({ name, sheet, config }) => {
       break;
     }
   }
-
   return Object.entries(processedTokens).reduce((res, [key, value]) => {
     res[key] = { value };
     return res;
@@ -213,10 +132,9 @@ export function processTokens(sheet, name, config) {
   // Filter out elements that contain ignore keywords in their name
   const filteredSheet = { ...sheet, children: filterSheetChildren(sheet.children) };
   const groups = filteredSheet.children.filter((item) => item.type === 'GROUP');
-  const _NAME = aliasMapping.find((item) => {
+  const _NAME = tokenAliasMapping.find((item) => {
     return item.alias.includes(name.toLowerCase());
   }).name;
-
   if (!groups.length) {
     return { [_NAME]: processGroup({ name: _NAME, sheet: filteredSheet, config }) };
   }
@@ -224,7 +142,7 @@ export function processTokens(sheet, name, config) {
   let tokenGroups = {};
 
   groups.forEach((groupSheet) => {
-    const _NAME = aliasMapping.find((item) => {
+    const _NAME = tokenAliasMapping.find((item) => {
       return item.alias.includes(name.toLowerCase());
     }).name;
     tokenGroups = {

@@ -43,9 +43,15 @@ export function parseCliArgs(argsArray) {
           case '--descriptionPages':
             accumulatedConfig.descriptionPages = argsArray[index + 1];
             break;
+          case '--descriptionTags':
+            accumulatedConfig.descriptionTags = argsArray[index + 1];
+            break;
           // Toggle debug mode if requested
           case '--debug':
             accumulatedConfig.debugMode = true;
+            break;
+          case '--removeOld':
+            accumulatedConfig.removeOld = true;
             break;
           // Recompile tokens from local Figma JSON file
           case '--recompileLocal':
