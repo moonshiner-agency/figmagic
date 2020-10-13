@@ -93,7 +93,7 @@ export const tokenAliasMapping = [
   },
   {
     name: 'breakpoints',
-    alias: ['breakpoints', 'breakpoint', 'responsive-design']
+    alias: ['breakpoints', 'breakpoint', 'responsive-design', 'measure']
   }
 ];
 

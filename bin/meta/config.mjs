@@ -35,5 +35,9 @@ export const defaultConfig = {
     templatePathStorybook: 'templates/story.js'
   },
   usePostscriptFontNames: false,
-  removeOld: false
+  removeOld: false,
+  graphicConfig: {
+    types: ['COMPONENT'],
+    frameNames: []
+  }
 };

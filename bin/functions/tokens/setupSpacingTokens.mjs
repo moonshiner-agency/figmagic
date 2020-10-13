@@ -4,8 +4,7 @@ import { normalizeUnits } from '../helpers/normalizeUnits.mjs';
 import {
   errorSetupSpacingTokensNoFrame,
   errorSetupSpacingTokensNoChildren,
-  errorSetupSpacingTokensNoUnits,
-  errorSetupSpacingTokensMissingProps
+  errorSetupSpacingTokensNoUnits
 } from '../../meta/errors.mjs';
 
 /**

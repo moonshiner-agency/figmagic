@@ -1,6 +1,7 @@
 export const acceptedTranslatedTokenTypes = [
   'abstaende',
   'breiten',
+  'measure',
   'palette',
   'schatten',
   'transition',

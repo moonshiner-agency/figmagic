@@ -6,8 +6,7 @@ import {
   errorProcessGraphicsImageError,
   errorProcessGraphicsNoImages,
   errorGetIds,
-  errorGetFileList,
-  errorGetIdString
+  errorGetFileList
 } from '../../meta/errors.mjs';
 
 /**
@@ -17,6 +16,7 @@ import {
  * @async
  * @function
  * @param {object} graphicsPage - Children of the Figma 'Graphics' page
+ * @param {object} graphicConfig
  * @param {object} config - Configuration object
  * @returns {array} - Returns file list
  * @throws {errorProcessGraphics} - Throws error if missing missingPage
@@ -24,9 +24,9 @@ import {
 export async function processGraphics(graphicsPage, config) {
   if (!graphicsPage) throw new Error(errorProcessGraphics);
 
-  const { token, url, outputFormatGraphics, outputScaleGraphics } = config;
-  const IDS = getIds(graphicsPage);
-  const ID_STRING = getIdString(IDS);
+  const { token, url, outputFormatGraphics, outputScaleGraphics, graphicConfig } = config;
+  const IDS = getIds(graphicsPage, graphicConfig);
+  const ID_STRING = IDS.map((i) => i).join();
   const SETTINGS = `&scale=${outputScaleGraphics}&format=${outputFormatGraphics}`;
   const URL = `${url}?ids=${ID_STRING}${SETTINGS}`;
 
@@ -62,22 +62,27 @@ export const getFileList = (imageResponse, ids, outputFormatGraphics) => {
   return fileList;
 };
 
-const getComponentChildren = (frame, componentChildren = []) => {
+const getGraphicNodes = (frame, graphicConfig, graphicNodes = []) => {
+  if (
+    graphicConfig.frameNames.length !== 0 &&
+    graphicConfig.frameNames.indexOf(frame.name) === -1
+  ) {
+    return [];
+  }
+
   frame.children.forEach((f) => {
-    if (f.type === 'COMPONENT') {
-      componentChildren.push(f);
+    if (graphicConfig.types.indexOf(f.type.toLowerCase()) !== -1) {
+      graphicNodes.push(f);
     } else if (f.type === 'GROUP') {
-      getComponentChildren(f, componentChildren);
+      getGraphicNodes(f, graphicConfig, graphicNodes);
     }
   });
-  return componentChildren;
+  return graphicNodes;
 };
 
-const getFrameIds = (frame) => {
-  const componentChildren = getComponentChildren(frame);
-  return componentChildren
-    .filter((item) => item.type === 'COMPONENT')
-    .map((item) => ({ id: item.id, name: item.name, group: frame.name }));
+const getFrameIds = (frame, graphicConfig) => {
+  const graphicNodes = getGraphicNodes(frame, graphicConfig);
+  return graphicNodes.map((item) => ({ id: item.id, name: item.name, group: frame.name }));
 };
 
 /**
@@ -86,36 +91,21 @@ const getFrameIds = (frame) => {
  * @export
  * @function
  * @param {object} graphicsPage - Figma 'Graphics' page
+ * @param {object} graphicConfig
  * @returns {array} - Array of graphics items
  * @throws {errorGetIds} - Throws error if no graphics page is provided
- * @throws {errorGetIds} - Throws error if no graphics page is zero-length
+ * @throws {errorGetIds} - Throws error if graphics page is zero-length
  */
-export const getIds = (graphicsPage) => {
+export const getIds = (graphicsPage, graphicConfig) => {
   if (!graphicsPage) throw new Error(errorGetIds);
-  if (!(graphicsPage.length > 0)) throw new Error(errorGetIds);
+  if (graphicsPage.length === 0) throw new Error(errorGetIds);
 
   let items = [];
 
   graphicsPage
     .filter((item) => item.type === 'FRAME')
     .forEach((frame) => {
-      items = [...items, ...getFrameIds(frame)];
+      items = [...items, ...getFrameIds(frame, graphicConfig)];
     });
-  // Filter out anything that is not a component
   return items;
-};
-
-/**
- * Collate valid string of IDs
- *
- * @export
- * @function
- * @param {array} ids - Figma 'Graphics' page
- * @returns {string} - Return ID string
- * @throws {errorGetIdString} - Throws error when no required arguments are provided
- */
-export const getIdString = (ids) => {
-  if (!ids) throw new Error(errorGetIdString);
-
-  return ids.map(({ id }) => id).join();
 };

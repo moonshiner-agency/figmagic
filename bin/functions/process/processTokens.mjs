@@ -14,6 +14,7 @@ import { setupOpacitiesTokens } from '../tokens/setupOpacitiesTokens.mjs';
 import { setupDurationTokens } from '../tokens/setupDurationTokens.mjs';
 import { setupDelayTokens } from '../tokens/setupDelayTokens.mjs';
 import { setupEasingTokens } from '../tokens/setupEasingTokens.mjs';
+import { setupGenericTokens } from '../tokens/setupGenericTokens.mjs';
 
 import { errorProcessTokens, errorProcessTokensNoConfig } from '../../meta/errors.mjs';
 import { ignoreElementsKeywords } from '../../meta/ignoreElementsKeywords.mjs';
@@ -52,6 +53,10 @@ const processGroup = ({ name, sheet, config }) => {
     }
     case 'lineHeights': {
       processedTokens = setupLineHeightTokens(sheet);
+      break;
+    }
+    case 'breakpoints': {
+      processedTokens = setupGenericTokens(sheet);
       break;
     }
     case 'mediaQueries': {
@@ -145,14 +150,24 @@ export function processTokens(sheet, name, config) {
     const _NAME = tokenAliasMapping.find((item) => {
       return item.alias.includes(name.toLowerCase());
     }).name;
-    tokenGroups = {
-      ...tokenGroups,
-      [groupSheet.name.replace('group-', '')]: processGroup({
-        name: _NAME,
-        sheet: groupSheet,
-        config
-      })
-    };
+    const groupName = groupSheet.name.replace('group-', '');
+    const group = processGroup({
+      name: _NAME,
+      sheet: groupSheet,
+      config
+    });
+    if (_NAME === groupName) {
+      tokenGroups = {
+        ...tokenGroups,
+        ...group
+      };
+    } else {
+      tokenGroups = {
+        ...tokenGroups,
+        [groupName]: group
+      };
+    }
   });
+  console.log({ [_NAME]: tokenGroups });
   return { [_NAME]: tokenGroups };
 }

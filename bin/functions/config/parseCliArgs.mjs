@@ -61,6 +61,9 @@ export function parseCliArgs(argsArray) {
           case '--syncGraphics':
             accumulatedConfig.syncGraphics = true;
             break;
+          case '--graphicConfig':
+            accumulatedConfig.graphicConfig = argsArray[index + 1];
+            break;
           // Sync elements from "Elements" page in Figma
           case '--syncElements':
             accumulatedConfig.syncElements = true;
