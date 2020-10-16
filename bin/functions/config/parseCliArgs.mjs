@@ -122,6 +122,10 @@ export function parseCliArgs(argsArray) {
             accumulatedConfig.outputDescriptionFormat = outputDescriptionFormat;
             break;
           }
+          case '--outputFormatGraphics': {
+            accumulatedConfig.outputFormatGraphics = argsArray[index + 1];
+            break;
+          }
           // Check and handle font unit switch
           case '--fontUnit':
           case '-f': {
