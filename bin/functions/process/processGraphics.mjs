@@ -21,12 +21,12 @@ import {
  * @returns {array} - Returns file list
  * @throws {errorProcessGraphics} - Throws error if missing missingPage
  */
-export async function processGraphics(graphicsPage, config) {
+export async function processGraphics(graphicsPage, parentName, config) {
   if (!graphicsPage) throw new Error(errorProcessGraphics);
 
   const { token, url, outputFormatGraphics, outputScaleGraphics, graphicConfig } = config;
-  const IDS = getIds(graphicsPage, graphicConfig);
-  const ID_STRING = IDS.map((i) => i).join();
+  const IDS = getIds(graphicsPage, parentName, graphicConfig);
+  const ID_STRING = IDS.map((i) => i.id).join();
   const SETTINGS = `&scale=${outputScaleGraphics}&format=${outputFormatGraphics}`;
   const URL = `${url}?ids=${ID_STRING}${SETTINGS}`;
 
@@ -57,7 +57,7 @@ export const getFileList = (imageResponse, ids, outputFormatGraphics) => {
     const name = camelize(entity.name);
     const FILE = `${name}.${outputFormatGraphics}`;
 
-    fileList.push({ url, file: FILE, group: entity.group });
+    fileList.push({ url, file: FILE, group: entity.group, parentName: entity.parentName });
   });
   return fileList;
 };
@@ -71,7 +71,7 @@ const getGraphicNodes = (frame, graphicConfig, graphicNodes = []) => {
   }
 
   frame.children.forEach((f) => {
-    if (graphicConfig.types.indexOf(f.type.toLowerCase()) !== -1) {
+    if (graphicConfig.types.indexOf(f.type) !== -1) {
       graphicNodes.push(f);
     } else if (f.type === 'GROUP') {
       getGraphicNodes(f, graphicConfig, graphicNodes);
@@ -80,9 +80,14 @@ const getGraphicNodes = (frame, graphicConfig, graphicNodes = []) => {
   return graphicNodes;
 };
 
-const getFrameIds = (frame, graphicConfig) => {
+const getFrameIds = (frame, parentName, graphicConfig) => {
   const graphicNodes = getGraphicNodes(frame, graphicConfig);
-  return graphicNodes.map((item) => ({ id: item.id, name: item.name, group: frame.name }));
+  return graphicNodes.map((item) => ({
+    id: item.id,
+    name: item.name,
+    group: frame.name,
+    parentName
+  }));
 };
 
 /**
@@ -96,7 +101,7 @@ const getFrameIds = (frame, graphicConfig) => {
  * @throws {errorGetIds} - Throws error if no graphics page is provided
  * @throws {errorGetIds} - Throws error if graphics page is zero-length
  */
-export const getIds = (graphicsPage, graphicConfig) => {
+export const getIds = (graphicsPage, parentName, graphicConfig) => {
   if (!graphicsPage) throw new Error(errorGetIds);
   if (graphicsPage.length === 0) throw new Error(errorGetIds);
 
@@ -105,7 +110,7 @@ export const getIds = (graphicsPage, graphicConfig) => {
   graphicsPage
     .filter((item) => item.type === 'FRAME')
     .forEach((frame) => {
-      items = [...items, ...getFrameIds(frame, graphicConfig)];
+      items = [...items, ...getFrameIds(frame, parentName, graphicConfig)];
     });
   return items;
 };

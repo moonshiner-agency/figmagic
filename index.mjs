@@ -146,7 +146,7 @@ export default async function figmagic({ CLI_ARGS, CWD } = { CLI_ARGS: [], CWD: 
       await createFolder(outputFolderGraphics);
       await Promise.all(
         GRAPHICS_PAGES.map(async (page) => {
-          const FILE_LIST = await processGraphics(page.children, CONFIG);
+          const FILE_LIST = await processGraphics(page.children, page.name, CONFIG);
           return await writeGraphics(FILE_LIST, CONFIG);
         })
       );

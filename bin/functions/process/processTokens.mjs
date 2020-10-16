@@ -168,6 +168,5 @@ export function processTokens(sheet, name, config) {
       };
     }
   });
-  console.log({ [_NAME]: tokenGroups });
   return { [_NAME]: tokenGroups };
 }

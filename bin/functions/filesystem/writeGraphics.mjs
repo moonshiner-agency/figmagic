@@ -16,11 +16,14 @@ import { errorWriteGraphics } from '../../meta/errors.mjs';
 export async function writeGraphics(fileList, config) {
   if (!fileList || !config) throw new Error(errorWriteGraphics);
 
-  const { outputFolderGraphics } = config;
-
+  const { outputFolderGraphics, graphicConfig } = config;
   await Promise.all(
     fileList.map(async (file) => {
-      await downloadFile(file.url, outputFolderGraphics, [file.group, file.file].join('/'));
+      const fileName = [
+        graphicConfig.useParentAsFolder ? file.parentName : file.group,
+        file.file
+      ].join('/');
+      await downloadFile(file.url, outputFolderGraphics, fileName);
     })
   );
 
