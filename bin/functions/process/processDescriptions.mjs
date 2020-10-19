@@ -1,6 +1,8 @@
 import { tokenAliasMapping, componentAliasMapping } from '../../meta/aliasMapping.mjs';
 import { errorProcessDescriptions, errorProcessDescriptionsNoConfig } from '../../meta/errors.mjs';
 import { camelize } from '../helpers/camelize.mjs';
+import marked from 'marked';
+import sanitizeHtml from 'sanitize-html';
 
 const mergedAlias = [...tokenAliasMapping, ...componentAliasMapping];
 
@@ -41,8 +43,11 @@ const filterDescriptions = (sheet, name, descriptionTags, descriptions = []) => 
   sheet.forEach((s) => {
     const transformedName = getTransformedName(s.name);
     if (descriptionTags.indexOf(transformedName.toLowerCase()) !== -1) {
+      const markdownText = marked(s.characters).replace(/\n/g, '');
       descriptions.push({
-        text: s.characters,
+        text: sanitizeHtml(markdownText, {
+          disallowedTagsMode: 'escape'
+        }),
         parentName: name.replace('group-', ''),
         name: camelize(transformedName)
       });

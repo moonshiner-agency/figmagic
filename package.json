@@ -37,6 +37,10 @@
     {
       "name": "Stanko",
       "url": "https://github.com/Stanko"
+    },
+    {
+      "name": "loberbichler",
+      "url": "https://github.com/loberbichler"
     }
   ],
   "license": "MIT",
@@ -47,16 +51,18 @@
     "babel-eslint": "^10.1.0",
     "babel-jest": "^26.1.0",
     "babel-plugin-dynamic-import-node": "^2.3.3",
-    "commitizen": "^4.1.2",
+    "commitizen": "^4.2.1",
     "cz-conventional-changelog": "^3.2.0",
     "eslint": "^7.5.0",
     "eslint-config-prettier": "^6.11.0",
     "eslint-plugin-prettier": "^3.1.4",
     "husky": "^4.2.5",
     "jest": "^26.1.0",
+    "marked": "^1.2.0",
     "prettier": "^2.0.5",
     "pretty-quick": "^2.0.1",
     "rollup": "^2.26.11",
+    "sanitize-html": "^2.1.0",
     "snyk": "^1.366.2",
     "validate-commit-msg": "^2.14.0",
     "webpack-cli": "^3.3.12"

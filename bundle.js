@@ -4,6 +4,8 @@ var path = require('path');
 var trash = require('trash');
 var fs = require('fs');
 var fetch = require('node-fetch');
+var marked = require('marked');
+var sanitizeHtml = require('sanitize-html');
 
 function _interopDefaultLegacy(e) {
   return e && typeof e === 'object' && 'default' in e ? e : { default: e };
@@ -13,6 +15,8 @@ var path__default = /*#__PURE__*/ _interopDefaultLegacy(path);
 var trash__default = /*#__PURE__*/ _interopDefaultLegacy(trash);
 var fs__default = /*#__PURE__*/ _interopDefaultLegacy(fs);
 var fetch__default = /*#__PURE__*/ _interopDefaultLegacy(fetch);
+var marked__default = /*#__PURE__*/ _interopDefaultLegacy(marked);
+var sanitizeHtml__default = /*#__PURE__*/ _interopDefaultLegacy(sanitizeHtml);
 
 const colors = {
   BgBlack: '\x1b[40m',
@@ -2076,8 +2080,11 @@ const filterDescriptions = (sheet, name, descriptionTags, descriptions = []) => 
   sheet.forEach((s) => {
     const transformedName = getTransformedName(s.name);
     if (descriptionTags.indexOf(transformedName.toLowerCase()) !== -1) {
+      const markdownText = marked__default['default'](s.characters).replace(/\n/g, '');
       descriptions.push({
-        text: s.characters,
+        text: sanitizeHtml__default['default'](markdownText, {
+          disallowedTagsMode: 'escape'
+        }),
         parentName: name.replace('group-', ''),
         name: camelize(transformedName)
       });
