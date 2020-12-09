@@ -43,7 +43,12 @@ const filterDescriptions = (sheet, name, descriptionTags, descriptions = []) => 
   sheet.forEach((s) => {
     const transformedName = getTransformedName(s.name);
     if (descriptionTags.indexOf(transformedName.toLowerCase()) !== -1) {
-      const markdownText = marked(s.characters).replace(/\n/g, '');
+      const text = (s.children && s.children.find((c) => c.name === 'text')) || s;
+      if (!text || !text.characters) {
+        return;
+      }
+
+      const markdownText = marked(text.characters).replace(/\n/g, '');
       descriptions.push({
         text: sanitizeHtml(markdownText, {
           disallowedTagsMode: 'escape'
