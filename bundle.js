@@ -126,9 +126,6 @@ const errorSetupDelayTokensNoFrame = `${colors.FgRed}No frame for setupDelayToke
 const errorSetupEasingTokensMissingProps = `${colors.FgRed}Missing "name" or "characters" properties in Easing frame!`;
 const errorSetupEasingTokensNoChildren = `${colors.FgRed}Easing frame has no children!`;
 const errorSetupEasingTokensNoFrame = `${colors.FgRed}No frame for setupEasingTokens()!`;
-const errorSetupGenericTokensMissingProps = `${colors.FgRed}Missing "name" or "characters" properties in Generic frame!`;
-const errorSetupGenericTokensNoFrame = `${colors.FgRed}No frame for setupGenericTokens()!`;
-const errorSetupGenericTokensNoChildren = `${colors.FgRed}Generic frame has no children!`;
 const errorWriteFile = `${colors.FgRed}Missing required parameters to correctly run writeFile()!`;
 const errorWriteFileWrongType = `${colors.FgRed}Provided invalid file type to writeFile()!`;
 const errorWriteGraphics = `${colors.FgRed}Missing "fileList" and/or "config" argument when calling writeGraphics()!`;
@@ -1204,18 +1201,18 @@ function setupMediaQueryTokens(mediaQueryFrame) {
   if (!mediaQueryFrame) throw new Error(errorSetupMediaQueryTokensNoFrame);
   if (!mediaQueryFrame.children) throw new Error(errorSetupMediaQueryTokensNoChildren);
 
-  let mediaQueryObject = {};
+  const mediaQueryChild = mediaQueryFrame.children.find((c) => c.name.match(/\d+/));
 
-  mediaQueryFrame.children.forEach((type) => {
-    if (!type.name || !type.absoluteBoundingBox)
-      throw new Error(errorSetupMediaQueryTokensMissingProps);
+  if (!mediaQueryChild || !mediaQueryChild.name) {
+    throw new Error(errorSetupMediaQueryTokensMissingProps);
+  }
 
-    const name = camelize(type.name);
+  const name = removeNonIntegerValues(camelize(mediaQueryChild.name));
+  let mediaQueryValue = mediaQueryChild.absoluteBoundingBox.width;
 
-    mediaQueryObject[name] = `${type.absoluteBoundingBox.width}px`;
-  });
-
-  return mediaQueryObject;
+  if (mediaQueryChild.children && mediaQueryChild.children.length > 0) {
+    mediaQueryValue = mediaQueryChild.children[0].absoluteBoundingBox.width;
+  }
 }
 
 /**
@@ -1355,31 +1352,6 @@ function setupEasingTokens(easingFrame) {
   });
 
   return easingObject;
-}
-
-/**
- * Places all Figma durations into a clean object
- *
- * @exports
- * @function
- * @param {object} genericFrame - A generic frame from Figma
- * @returns {object} - Returns an object with all the extracted generic values
- * @throws {errorSetupDurationTokensNoFrame} - When there is no provided Figma frame
- * @throws {errorSetupDurationTokensNoChildren} - When no children in Figma frame
- * @throws {errorSetupDurationTokensMissingProps} - When missing required props in children
- */
-function setupGenericTokens(genericFrame) {
-  if (!genericFrame) throw new Error(errorSetupGenericTokensNoFrame);
-  if (!genericFrame.children) throw new Error(errorSetupGenericTokensNoChildren);
-
-  let genericObject = {};
-
-  genericFrame.children.forEach((type) => {
-    if (!type.name || !type.characters) throw new Error(errorSetupGenericTokensMissingProps);
-    const name = camelize(type.name);
-    genericObject[name] = type.characters;
-  });
-  return genericObject;
 }
 
 const ignoreElementsKeywords = ['ignore', 'description', 'layout', 'ignore_layout'];
@@ -1555,10 +1527,7 @@ const processGroup = ({ name, sheet, config }) => {
       processedTokens = setupLineHeightTokens(sheet);
       break;
     }
-    case 'breakpoints': {
-      processedTokens = setupGenericTokens(sheet);
-      break;
-    }
+    case 'breakpoints':
     case 'mediaQueries': {
       processedTokens = setupMediaQueryTokens(sheet);
       break;
@@ -1659,7 +1628,7 @@ function processTokens(sheet, name, config) {
       sheet: groupSheet,
       config
     });
-    if (_NAME.includes(groupName)) {
+    if (_NAME.includes(groupName) || !isNaN(parseInt(groupName))) {
       tokenGroups = {
         ...tokenGroups,
         ...group
@@ -1948,6 +1917,8 @@ const acceptedTokenTypes = [
   'animation easing',
   'borderwidth',
   'borderwidths',
+  'breakpoint',
+  'breakpoints',
   'color',
   'colors',
   'colour',

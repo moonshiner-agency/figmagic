@@ -62,10 +62,7 @@ const processGroup = ({ name, sheet, config }) => {
       processedTokens = setupLineHeightTokens(sheet);
       break;
     }
-    case 'breakpoints': {
-      processedTokens = setupGenericTokens(sheet);
-      break;
-    }
+    case 'breakpoints':
     case 'mediaQueries': {
       processedTokens = setupMediaQueryTokens(sheet);
       break;
@@ -166,7 +163,7 @@ export function processTokens(sheet, name, config) {
       sheet: groupSheet,
       config
     });
-    if (_NAME.includes(groupName)) {
+    if (_NAME.includes(groupName) || !isNaN(parseInt(groupName))) {
       tokenGroups = {
         ...tokenGroups,
         ...group

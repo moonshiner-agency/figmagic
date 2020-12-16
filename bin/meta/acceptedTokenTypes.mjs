@@ -16,6 +16,8 @@ export const acceptedTokenTypes = [
   'animation easing',
   'borderwidth',
   'borderwidths',
+  'breakpoint',
+  'breakpoints',
   'color',
   'colors',
   'colour',

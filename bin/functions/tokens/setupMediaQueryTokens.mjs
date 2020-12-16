@@ -1,4 +1,5 @@
 import { camelize } from '../helpers/camelize.mjs';
+import { removeNonIntegerValues } from '../helpers/removeNonInteger.mjs';
 
 import {
   errorSetupMediaQueryTokensNoFrame,
@@ -23,14 +24,18 @@ export function setupMediaQueryTokens(mediaQueryFrame) {
 
   let mediaQueryObject = {};
 
-  mediaQueryFrame.children.forEach((type) => {
-    if (!type.name || !type.absoluteBoundingBox)
-      throw new Error(errorSetupMediaQueryTokensMissingProps);
+  const mediaQueryChild = mediaQueryFrame.children.find((c) => c.name.match(/\d+/));
 
-    const name = camelize(type.name);
+  if (!mediaQueryChild || !mediaQueryChild.name) {
+    throw new Error(errorSetupMediaQueryTokensMissingProps);
+  }
 
-    mediaQueryObject[name] = `${type.absoluteBoundingBox.width}px`;
-  });
+  const name = removeNonIntegerValues(camelize(mediaQueryChild.name));
+  let mediaQueryValue = mediaQueryChild.absoluteBoundingBox.width;
 
-  return mediaQueryObject;
+  if (mediaQueryChild.children && mediaQueryChild.children.length > 0) {
+    mediaQueryValue = mediaQueryChild.children[0].absoluteBoundingBox.width;
+  }
+
+  mediaQueryObject[name] = `${mediaQueryValue}px`;
 }
