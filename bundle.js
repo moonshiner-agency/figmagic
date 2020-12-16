@@ -106,7 +106,6 @@ const errorSetupMediaQueryTokensNoFrame = `${colors.FgRed}No frame for setupMedi
 const errorSetupOpacitiesTokensMissingProps = `${colors.FgRed}Missing "name" or "characters" properties in opacities frame!`;
 const errorSetupOpacitiesTokensNoChildren = `${colors.FgRed}Opacities frame has no children!`;
 const errorSetupOpacitiesTokensNoFrame = `${colors.FgRed}No frame for setupOpacitiesTokens()!`;
-const errorSetupRadiusTokensMissingProps = `${colors.FgRed}Missing "name"  property in radius frame!`;
 const errorSetupRadiusTokensNoChildren = `${colors.FgRed}Radius frame has no children!`;
 const errorSetupRadiusTokensNoFrame = `${colors.FgRed}No frame for setupRadiusTokens()!`;
 const errorSetupShadowTokensMissingProps = `${colors.FgRed}Missing "effects" property in shadow frame!`;
@@ -974,6 +973,14 @@ function setupLineHeightTokens(lineHeightFrame) {
   return lineHeightObject;
 }
 
+/**
+ * Remove all non integer values from a string
+ *
+ * @exports
+ * @function
+ * @param {string} str - The string which is to be parsed
+ * @returns {string} - The final string
+ */
 function removeNonIntegerValues(str) {
   return str.replace(/\D+/, '');
 }
@@ -1071,8 +1078,6 @@ function setupRadiusTokens(radiusFrame) {
   let cornerRadiusObject = {};
 
   const radiusChild = radiusFrame.children.find((c) => c.name.match(/\d+/));
-  // const durationValue = radiusFrame.children[0].characters;
-
   const name = camelize(radiusChild.name);
 
   const RADIUS = (() => {
@@ -1276,27 +1281,22 @@ function setupOpacitiesTokens(opacitiesFrame, opacitiesUnit) {
  * @throws {errorSetupDurationTokensNoChildren} - When no children in Figma frame
  * @throws {errorSetupDurationTokensMissingProps} - When missing required props in children
  */
-function setupDurationTokens(durationFrame, durationObj = {}) {
+function setupDurationTokens(durationFrame) {
   if (!durationFrame) throw new Error(errorSetupDurationTokensNoFrame);
   if (!durationFrame.children) throw new Error(errorSetupDurationTokensNoChildren);
 
+  const durationObj = {};
+
   const durationChild = durationFrame.children.find((c) => c.name.match(/\d+/));
-  const durationValue = durationChild.children[0].characters;
+
+  if (!durationChild.children[0].characters || !durationChild.name) {
+    throw new Error(errorSetupDurationTokensMissingProps);
+  }
 
   const name = camelize(durationChild.name);
+  const durationValue = durationChild.children[0].characters;
+
   durationObj[name] = durationValue;
-
-  // durationFrame.children.forEach((frame) => {
-  //   if ((!frame.name || !frame.characters) && !frame.children) {
-  //     throw new Error(errorSetupDurationTokensMissingProps);
-  //   } else if (frame.children) {
-  //     return setupDurationTokens(frame.)
-  //   }
-
-  //   const name = camelize(frame.name);
-
-  //   durationObject[name] = frame.characters;
-  // });
 
   return durationObj;
 }
@@ -1653,11 +1653,7 @@ function processTokens(sheet, name, config) {
       return item.alias.includes(name.toLowerCase());
     }).name;
 
-    let groupName = camelize([...groupSheet.name.matchAll(/(^\w+-)(\w+)/g)][0][2]);
-    // if (groupSheet.name.match(/\d+$/)) {
-    //   groupName = groupSheet.name.match(/\d+$/)[0];
-    // }
-
+    const groupName = camelize([...groupSheet.name.matchAll(/(^\w+-)(\w+)/g)][0][2]);
     const group = processGroup({
       name: _NAME,
       sheet: groupSheet,
@@ -2142,6 +2138,7 @@ const filterDescriptions = (sheet, name, descriptionTags, descriptions = []) => 
     ) {
       const text =
         (s.children && s.children.find((c) => c.name === 'text' || c.name === 'content')) || s;
+
       if (!text || !text.characters) {
         return;
       }
@@ -2241,6 +2238,7 @@ async function processGraphics(graphicsPage, parentName, config) {
 
   const { token, url, outputFormatGraphics, outputScaleGraphics, graphicConfig } = config;
   const IDS = getIds(graphicsPage, parentName, graphicConfig);
+
   if (IDS.length) {
     const ID_STRING = IDS.map((i) => i.id).join();
     const SETTINGS = `&scale=${outputScaleGraphics}&format=${outputFormatGraphics}`;
