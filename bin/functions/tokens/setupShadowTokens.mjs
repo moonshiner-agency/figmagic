@@ -1,4 +1,5 @@
 import { camelize } from '../helpers/camelize.mjs';
+import { removeNonIntegerValues } from '../helpers/removeNonInteger.mjs';
 import { roundColorValue } from '../helpers/roundColorValue.mjs';
 
 import {
@@ -27,7 +28,7 @@ export function setupShadowTokens(shadowFrame) {
   shadowFrame.children.forEach((type) => {
     if (!type.name || !type.effects) throw new Error(errorSetupShadowTokensMissingProps);
 
-    const name = camelize(type.name);
+    const name = removeNonIntegerValues(camelize(type.name));
 
     const effects = type.effects.map((effect) => {
       if (effect.type === 'DROP_SHADOW') return effect;

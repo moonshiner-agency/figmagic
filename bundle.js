@@ -827,26 +827,49 @@ function setupSpacingTokens(spacingFrame, spacingUnit, remSize) {
  * @throws {errorSetupFontTokensNoChildren} - When Figma frame is missing children
  * @throws {errorSetupFontTokensMissingProps} - When missing required props on frame children
  */
-function setupFontTokens(fontFrame, usePostscriptFontNames) {
+function setupFontTokens(fontFrame, fontUnit, remSize) {
   if (!fontFrame) throw new Error(errorSetupFontTokensNoFrame);
   if (!fontFrame.children) throw new Error(errorSetupFontTokensNoChildren);
+  if (!fontUnit || !remSize) throw new Error(errorSetupFontSizeTokensNoSizing);
 
   let fontObject = {};
 
-  fontFrame.children.forEach((type) => {
-    if (!type.name || !type.style) throw new Error(errorSetupFontTokensMissingProps);
-    // Seems never to hit...?
-    //if (!type.style.fontPostScriptName || !type.style.fontFamily)
-    //  throw new Error(errorSetupFontTokensMissingProps);
+  fontFrame.children.forEach((c) => {
+    if (!c.name) throw new Error(errorSetupFontTokensMissingProps);
 
-    const name = camelize(type.name);
+    const slice = c.name.match(/size=(\d+)(.+=(\w*))?/);
+    if (slice) {
+      const name = slice[1];
+      const styleChild = c.children[0];
+      const size = styleChild.style.fontSize / remSize + fontUnit;
+      const weight = styleChild.style.fontWeight;
+      const letterSpacing = styleChild.style.letterSpacing / remSize + fontUnit;
+      const lineHeight = styleChild.style.lineHeightPx / remSize + fontUnit;
 
-    // Use Postscript font names or the default font family names (without spaces)
-    const FONT = usePostscriptFontNames
-      ? type.style.fontPostScriptName
-      : type.style.fontFamily.replace(' ', '');
+      fontObject[name] = size;
 
-    fontObject[name] = FONT;
+      // TODO: cant be parsed like that by StyleDictionary
+
+      // if (!fontObject[name]) {
+      //   fontObject[name] = {};
+      // }
+      // if (slice[3]) {
+      //   const weightName = slice[3];
+      //   fontObject[name][weightName] = {
+      //     size,
+      //     weight,
+      //     letterSpacing,
+      //     lineHeight
+      //   };
+      // } else {
+      //   fontObject[name] = {
+      //     size,
+      //     weight,
+      //     letterSpacing,
+      //     lineHeight
+      //   };
+      // }
+    }
   });
 
   return fontObject;
@@ -951,6 +974,10 @@ function setupLineHeightTokens(lineHeightFrame) {
   return lineHeightObject;
 }
 
+function removeNonIntegerValues(str) {
+  return str.replace(/\D+/, '');
+}
+
 /**
  * Places all Figma shadows into a clean object
  *
@@ -971,7 +998,7 @@ function setupShadowTokens(shadowFrame) {
   shadowFrame.children.forEach((type) => {
     if (!type.name || !type.effects) throw new Error(errorSetupShadowTokensMissingProps);
 
-    const name = camelize(type.name);
+    const name = removeNonIntegerValues(camelize(type.name));
 
     const effects = type.effects.map((effect) => {
       if (effect.type === 'DROP_SHADOW') return effect;
@@ -1014,14 +1041,14 @@ function setupBorderWidthTokens(borderWidthFrame) {
 
   let borderWidthObject = {};
 
-  borderWidthFrame.children.forEach((type) => {
-    if (!type.name || typeof type.strokeWeight === 'undefined')
-      throw new Error(errorSetupBorderWidthTokensMissingProps);
+  const borderChild = borderWidthFrame.children.find((c) => c.name.match(/\d+/));
+  if (!borderChild.name || typeof borderChild.strokeWeight === 'undefined') {
+    throw new Error(errorSetupBorderWidthTokensMissingProps);
+  }
 
-    const name = camelize(type.name);
+  const name = camelize(borderChild.name);
 
-    borderWidthObject[name] = `${parseInt(type.strokeWeight, 10)}px`;
-  });
+  borderWidthObject[name] = `${parseInt(borderChild.strokeWeight, 10)}px`;
 
   return borderWidthObject;
 }
@@ -1043,19 +1070,18 @@ function setupRadiusTokens(radiusFrame) {
 
   let cornerRadiusObject = {};
 
-  radiusFrame.children.forEach((type) => {
-    if (!type.name) throw new Error(errorSetupRadiusTokensMissingProps);
+  const radiusChild = radiusFrame.children.find((c) => c.name.match(/\d+/));
+  // const durationValue = radiusFrame.children[0].characters;
 
-    const name = camelize(type.name);
+  const name = camelize(radiusChild.name);
 
-    const RADIUS = (() => {
-      if (type.cornerRadius)
-        return normalizeUnits(type.cornerRadius, 'cornerRadius', 'adjustedRadius');
-      else return `0px`;
-    })();
+  const RADIUS = (() => {
+    if (radiusChild.cornerRadius)
+      return normalizeUnits(radiusChild.cornerRadius, 'cornerRadius', 'adjustedRadius');
+    else return `0px`;
+  })();
 
-    cornerRadiusObject[name] = RADIUS;
-  });
+  cornerRadiusObject[name] = RADIUS;
 
   return cornerRadiusObject;
 }
@@ -1250,21 +1276,29 @@ function setupOpacitiesTokens(opacitiesFrame, opacitiesUnit) {
  * @throws {errorSetupDurationTokensNoChildren} - When no children in Figma frame
  * @throws {errorSetupDurationTokensMissingProps} - When missing required props in children
  */
-function setupDurationTokens(durationFrame) {
+function setupDurationTokens(durationFrame, durationObj = {}) {
   if (!durationFrame) throw new Error(errorSetupDurationTokensNoFrame);
   if (!durationFrame.children) throw new Error(errorSetupDurationTokensNoChildren);
 
-  let durationObject = {};
+  const durationChild = durationFrame.children.find((c) => c.name.match(/\d+/));
+  const durationValue = durationChild.children[0].characters;
 
-  durationFrame.children.forEach((type) => {
-    if (!type.name || !type.characters) throw new Error(errorSetupDurationTokensMissingProps);
+  const name = camelize(durationChild.name);
+  durationObj[name] = durationValue;
 
-    const name = camelize(type.name);
+  // durationFrame.children.forEach((frame) => {
+  //   if ((!frame.name || !frame.characters) && !frame.children) {
+  //     throw new Error(errorSetupDurationTokensMissingProps);
+  //   } else if (frame.children) {
+  //     return setupDurationTokens(frame.)
+  //   }
 
-    durationObject[name] = type.characters;
-  });
+  //   const name = camelize(frame.name);
 
-  return durationObject;
+  //   durationObject[name] = frame.characters;
+  // });
+
+  return durationObj;
 }
 
 /**
@@ -1380,6 +1414,14 @@ const tokenAliasMapping = [
     alias: ['typography', 'typografie']
   },
   {
+    name: 'heading',
+    alias: ['heading', 'headings']
+  },
+  {
+    name: 'copy',
+    alias: ['copy', 'copytext']
+  },
+  {
     name: 'letterSpacings',
     alias: ['letterspacing', 'letterspacings']
   },
@@ -1396,7 +1438,7 @@ const tokenAliasMapping = [
     alias: ['opacity', 'opacities']
   },
   {
-    name: 'radii',
+    name: 'radius',
     alias: ['radius', 'radii']
   },
   {
@@ -1484,6 +1526,12 @@ const processGroup = ({ name, sheet, config }) => {
       processedTokens = setupColorTokens(sheet);
       break;
     }
+    case 'copy':
+    case 'heading': {
+      if (!config) throw new Error(errorProcessTokensNoConfig);
+      processedTokens = setupFontTokens(sheet, config.fontUnit, config.remSize);
+      break;
+    }
     case 'fontFamily': {
       if (!config) throw new Error(errorProcessTokensNoConfig);
       processedTokens = setupFontTokens(sheet, config.usePostscriptFontNames);
@@ -1520,7 +1568,7 @@ const processGroup = ({ name, sheet, config }) => {
       processedTokens = setupOpacitiesTokens(sheet, config.opacitiesUnit);
       break;
     }
-    case 'radii': {
+    case 'radius': {
       processedTokens = setupRadiusTokens(sheet);
       break;
     }
@@ -1588,7 +1636,9 @@ function processTokens(sheet, name, config) {
 
   // Filter out elements that contain ignore keywords in their name
   const filteredSheet = { ...sheet, children: filterSheetChildren(sheet.children) };
-  const groups = filteredSheet.children.filter((item) => item.type === 'GROUP');
+  const groups = filteredSheet.children.filter(
+    (item) => item.type === 'GROUP' || item.name.includes('group')
+  );
   const _NAME = tokenAliasMapping.find((item) => {
     return item.alias.includes(name.toLowerCase());
   }).name;
@@ -1602,13 +1652,18 @@ function processTokens(sheet, name, config) {
     const _NAME = tokenAliasMapping.find((item) => {
       return item.alias.includes(name.toLowerCase());
     }).name;
-    const groupName = groupSheet.name.replace('group-', '');
+
+    let groupName = camelize([...groupSheet.name.matchAll(/(^\w+-)(\w+)/g)][0][2]);
+    // if (groupSheet.name.match(/\d+$/)) {
+    //   groupName = groupSheet.name.match(/\d+$/)[0];
+    // }
+
     const group = processGroup({
       name: _NAME,
       sheet: groupSheet,
       config
     });
-    if (_NAME === groupName) {
+    if (_NAME.includes(groupName)) {
       tokenGroups = {
         ...tokenGroups,
         ...group
@@ -1901,6 +1956,7 @@ const acceptedTokenTypes = [
   'colors',
   'colour',
   'colours',
+  'copy',
   'delay',
   'delays',
   'duration',
@@ -1912,6 +1968,7 @@ const acceptedTokenTypes = [
   'fontsizes',
   'fontweight',
   'fontweights',
+  'heading',
   'letterspacing',
   'letterspacings',
   'lineheight',
@@ -2047,7 +2104,7 @@ const getTransformedName = (originalName) => {
   const tN = mergedAlias.find((item) => {
     return item.alias.includes(camelize(originalName).toLowerCase());
   });
-  return tN ? tN.name : originalName;
+  return tN ? tN.name : originalName.replace('group-', '');
 };
 
 /**
@@ -2079,8 +2136,12 @@ const filterDescriptions = (sheet, name, descriptionTags, descriptions = []) => 
 
   sheet.forEach((s) => {
     const transformedName = getTransformedName(s.name);
-    if (descriptionTags.indexOf(transformedName.toLowerCase()) !== -1) {
-      const text = (s.children && s.children.find((c) => c.name === 'text')) || s;
+    if (
+      descriptionTags.indexOf(transformedName.toLowerCase()) !== -1 ||
+      transformedName.indexOf('description-') !== -1
+    ) {
+      const text =
+        (s.children && s.children.find((c) => c.name === 'text' || c.name === 'content')) || s;
       if (!text || !text.characters) {
         return;
       }
@@ -2180,15 +2241,17 @@ async function processGraphics(graphicsPage, parentName, config) {
 
   const { token, url, outputFormatGraphics, outputScaleGraphics, graphicConfig } = config;
   const IDS = getIds(graphicsPage, parentName, graphicConfig);
-  const ID_STRING = IDS.map((i) => i.id).join();
-  const SETTINGS = `&scale=${outputScaleGraphics}&format=${outputFormatGraphics}`;
-  const URL = `${url}?ids=${ID_STRING}${SETTINGS}`;
+  if (IDS.length) {
+    const ID_STRING = IDS.map((i) => i.id).join();
+    const SETTINGS = `&scale=${outputScaleGraphics}&format=${outputFormatGraphics}`;
+    const URL = `${url}?ids=${ID_STRING}${SETTINGS}`;
 
-  const IMAGE_RESPONSE = await getFromApi(token, URL, 'images');
-  if (IMAGE_RESPONSE.err) throw new Error(errorProcessGraphicsImageError);
-  if (!IMAGE_RESPONSE.images) throw new Error(errorProcessGraphicsNoImages);
+    const IMAGE_RESPONSE = await getFromApi(token, URL, 'images');
+    if (IMAGE_RESPONSE.err) throw new Error(errorProcessGraphicsImageError);
+    if (!IMAGE_RESPONSE.images) throw new Error(errorProcessGraphicsNoImages);
 
-  return getFileList(IMAGE_RESPONSE, IDS, outputFormatGraphics);
+    return getFileList(IMAGE_RESPONSE, IDS, outputFormatGraphics);
+  }
 }
 
 /**
@@ -2391,7 +2454,9 @@ async function figmagic({ CLI_ARGS, CWD } = { CLI_ARGS: [], CWD: '' }) {
       await Promise.all(
         GRAPHICS_PAGES.map(async (page) => {
           const FILE_LIST = await processGraphics(page.children, page.name, CONFIG);
-          return await writeGraphics(FILE_LIST, CONFIG);
+          if (FILE_LIST) {
+            return await writeGraphics(FILE_LIST, CONFIG);
+          }
         })
       );
     }

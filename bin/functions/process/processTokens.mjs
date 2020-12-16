@@ -150,7 +150,7 @@ export function processTokens(sheet, name, config) {
     const _NAME = tokenAliasMapping.find((item) => {
       return item.alias.includes(name.toLowerCase());
     }).name;
-    const groupName = groupSheet.name.replace('group-', '');
+    const groupName = groupSheet.name.replace(/group-\w*-?/, '');
     const group = processGroup({
       name: _NAME,
       sheet: groupSheet,
