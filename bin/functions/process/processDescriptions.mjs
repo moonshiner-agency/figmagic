@@ -10,7 +10,7 @@ export const getTransformedName = (originalName) => {
   const tN = mergedAlias.find((item) => {
     return item.alias.includes(camelize(originalName).toLowerCase());
   });
-  return tN ? tN.name : originalName;
+  return tN ? tN.name : originalName.replace('group-', '');
 };
 
 /**
@@ -42,8 +42,13 @@ const filterDescriptions = (sheet, name, descriptionTags, descriptions = []) => 
 
   sheet.forEach((s) => {
     const transformedName = getTransformedName(s.name);
-    if (descriptionTags.indexOf(transformedName.toLowerCase()) !== -1) {
-      const text = (s.children && s.children.find((c) => c.name === 'text')) || s;
+    if (
+      descriptionTags.indexOf(transformedName.toLowerCase()) !== -1 ||
+      transformedName.indexOf('description-') !== -1
+    ) {
+      const text =
+        (s.children && s.children.find((c) => c.name === 'text' || c.name === 'content')) || s;
+
       if (!text || !text.characters) {
         return;
       }

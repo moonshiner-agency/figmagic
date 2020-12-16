@@ -147,7 +147,9 @@ export default async function figmagic({ CLI_ARGS, CWD } = { CLI_ARGS: [], CWD: 
       await Promise.all(
         GRAPHICS_PAGES.map(async (page) => {
           const FILE_LIST = await processGraphics(page.children, page.name, CONFIG);
-          return await writeGraphics(FILE_LIST, CONFIG);
+          if (FILE_LIST) {
+            return await writeGraphics(FILE_LIST, CONFIG);
+          }
         })
       );
     }

@@ -3,7 +3,8 @@ import { camelize } from '../helpers/camelize.mjs';
 import {
   errorSetupFontTokensNoFrame,
   errorSetupFontTokensNoChildren,
-  errorSetupFontTokensMissingProps
+  errorSetupFontTokensMissingProps,
+  errorSetupFontSizeTokensNoSizing
 } from '../../meta/errors.mjs';
 
 /**
@@ -18,26 +19,49 @@ import {
  * @throws {errorSetupFontTokensNoChildren} - When Figma frame is missing children
  * @throws {errorSetupFontTokensMissingProps} - When missing required props on frame children
  */
-export function setupFontTokens(fontFrame, usePostscriptFontNames) {
+export function setupFontTokens(fontFrame, fontUnit, remSize) {
   if (!fontFrame) throw new Error(errorSetupFontTokensNoFrame);
   if (!fontFrame.children) throw new Error(errorSetupFontTokensNoChildren);
+  if (!fontUnit || !remSize) throw new Error(errorSetupFontSizeTokensNoSizing);
 
   let fontObject = {};
 
-  fontFrame.children.forEach((type) => {
-    if (!type.name || !type.style) throw new Error(errorSetupFontTokensMissingProps);
-    // Seems never to hit...?
-    //if (!type.style.fontPostScriptName || !type.style.fontFamily)
-    //  throw new Error(errorSetupFontTokensMissingProps);
+  fontFrame.children.forEach((c) => {
+    if (!c.name) throw new Error(errorSetupFontTokensMissingProps);
 
-    const name = camelize(type.name);
+    const slice = c.name.match(/size=(\d+)(.+=(\w*))?/);
+    if (slice) {
+      const name = slice[1];
+      const styleChild = c.children[0];
+      const size = styleChild.style.fontSize / remSize + fontUnit;
+      const weight = styleChild.style.fontWeight;
+      const letterSpacing = styleChild.style.letterSpacing / remSize + fontUnit;
+      const lineHeight = styleChild.style.lineHeightPx / remSize + fontUnit;
 
-    // Use Postscript font names or the default font family names (without spaces)
-    const FONT = usePostscriptFontNames
-      ? type.style.fontPostScriptName
-      : type.style.fontFamily.replace(' ', '');
+      fontObject[name] = size;
 
-    fontObject[name] = FONT;
+      // TODO: cant be parsed like that by StyleDictionary
+
+      // if (!fontObject[name]) {
+      //   fontObject[name] = {};
+      // }
+      // if (slice[3]) {
+      //   const weightName = slice[3];
+      //   fontObject[name][weightName] = {
+      //     size,
+      //     weight,
+      //     letterSpacing,
+      //     lineHeight
+      //   };
+      // } else {
+      //   fontObject[name] = {
+      //     size,
+      //     weight,
+      //     letterSpacing,
+      //     lineHeight
+      //   };
+      // }
+    }
   });
 
   return fontObject;

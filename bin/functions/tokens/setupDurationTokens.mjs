@@ -21,15 +21,18 @@ export function setupDurationTokens(durationFrame) {
   if (!durationFrame) throw new Error(errorSetupDurationTokensNoFrame);
   if (!durationFrame.children) throw new Error(errorSetupDurationTokensNoChildren);
 
-  let durationObject = {};
+  const durationObj = {};
 
-  durationFrame.children.forEach((type) => {
-    if (!type.name || !type.characters) throw new Error(errorSetupDurationTokensMissingProps);
+  const durationChild = durationFrame.children.find((c) => c.name.match(/\d+/));
 
-    const name = camelize(type.name);
+  if (!durationChild.children[0].characters || !durationChild.name) {
+    throw new Error(errorSetupDurationTokensMissingProps);
+  }
 
-    durationObject[name] = type.characters;
-  });
+  const name = camelize(durationChild.name);
+  const durationValue = durationChild.children[0].characters;
 
-  return durationObject;
+  durationObj[name] = durationValue;
+
+  return durationObj;
 }

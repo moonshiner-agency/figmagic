@@ -19,6 +19,7 @@ import { setupGenericTokens } from '../tokens/setupGenericTokens.mjs';
 import { errorProcessTokens, errorProcessTokensNoConfig } from '../../meta/errors.mjs';
 import { ignoreElementsKeywords } from '../../meta/ignoreElementsKeywords.mjs';
 import { tokenAliasMapping } from '../../meta/aliasMapping.mjs';
+import { camelize } from '../helpers/camelize.mjs';
 
 const processGroup = ({ name, sheet, config }) => {
   let processedTokens = undefined;
@@ -30,6 +31,12 @@ const processGroup = ({ name, sheet, config }) => {
     }
     case 'colors': {
       processedTokens = setupColorTokens(sheet);
+      break;
+    }
+    case 'copy':
+    case 'heading': {
+      if (!config) throw new Error(errorProcessTokensNoConfig);
+      processedTokens = setupFontTokens(sheet, config.fontUnit, config.remSize);
       break;
     }
     case 'fontFamily': {
@@ -68,7 +75,7 @@ const processGroup = ({ name, sheet, config }) => {
       processedTokens = setupOpacitiesTokens(sheet, config.opacitiesUnit);
       break;
     }
-    case 'radii': {
+    case 'radius': {
       processedTokens = setupRadiusTokens(sheet);
       break;
     }
@@ -136,7 +143,9 @@ export function processTokens(sheet, name, config) {
 
   // Filter out elements that contain ignore keywords in their name
   const filteredSheet = { ...sheet, children: filterSheetChildren(sheet.children) };
-  const groups = filteredSheet.children.filter((item) => item.type === 'GROUP');
+  const groups = filteredSheet.children.filter(
+    (item) => item.type === 'GROUP' || item.name.includes('group')
+  );
   const _NAME = tokenAliasMapping.find((item) => {
     return item.alias.includes(name.toLowerCase());
   }).name;
@@ -150,13 +159,14 @@ export function processTokens(sheet, name, config) {
     const _NAME = tokenAliasMapping.find((item) => {
       return item.alias.includes(name.toLowerCase());
     }).name;
-    const groupName = groupSheet.name.replace(/group-\w*-?/, '');
+
+    const groupName = camelize([...groupSheet.name.matchAll(/(^\w+-)(\w+)/g)][0][2]);
     const group = processGroup({
       name: _NAME,
       sheet: groupSheet,
       config
     });
-    if (_NAME === groupName) {
+    if (_NAME.includes(groupName)) {
       tokenGroups = {
         ...tokenGroups,
         ...group

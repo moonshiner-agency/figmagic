@@ -26,15 +26,18 @@ export async function processGraphics(graphicsPage, parentName, config) {
 
   const { token, url, outputFormatGraphics, outputScaleGraphics, graphicConfig } = config;
   const IDS = getIds(graphicsPage, parentName, graphicConfig);
-  const ID_STRING = IDS.map((i) => i.id).join();
-  const SETTINGS = `&scale=${outputScaleGraphics}&format=${outputFormatGraphics}`;
-  const URL = `${url}?ids=${ID_STRING}${SETTINGS}`;
 
-  const IMAGE_RESPONSE = await getFromApi(token, URL, 'images');
-  if (IMAGE_RESPONSE.err) throw new Error(errorProcessGraphicsImageError);
-  if (!IMAGE_RESPONSE.images) throw new Error(errorProcessGraphicsNoImages);
+  if (IDS.length) {
+    const ID_STRING = IDS.map((i) => i.id).join();
+    const SETTINGS = `&scale=${outputScaleGraphics}&format=${outputFormatGraphics}`;
+    const URL = `${url}?ids=${ID_STRING}${SETTINGS}`;
 
-  return getFileList(IMAGE_RESPONSE, IDS, outputFormatGraphics);
+    const IMAGE_RESPONSE = await getFromApi(token, URL, 'images');
+    if (IMAGE_RESPONSE.err) throw new Error(errorProcessGraphicsImageError);
+    if (!IMAGE_RESPONSE.images) throw new Error(errorProcessGraphicsNoImages);
+
+    return getFileList(IMAGE_RESPONSE, IDS, outputFormatGraphics);
+  }
 }
 
 /**

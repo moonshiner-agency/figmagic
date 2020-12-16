@@ -22,14 +22,14 @@ export function setupBorderWidthTokens(borderWidthFrame) {
 
   let borderWidthObject = {};
 
-  borderWidthFrame.children.forEach((type) => {
-    if (!type.name || typeof type.strokeWeight === 'undefined')
-      throw new Error(errorSetupBorderWidthTokensMissingProps);
+  const borderChild = borderWidthFrame.children.find((c) => c.name.match(/\d+/));
+  if (!borderChild.name || typeof borderChild.strokeWeight === 'undefined') {
+    throw new Error(errorSetupBorderWidthTokensMissingProps);
+  }
 
-    const name = camelize(type.name);
+  const name = camelize(borderChild.name);
 
-    borderWidthObject[name] = `${parseInt(type.strokeWeight, 10)}px`;
-  });
+  borderWidthObject[name] = `${parseInt(borderChild.strokeWeight, 10)}px`;
 
   return borderWidthObject;
 }

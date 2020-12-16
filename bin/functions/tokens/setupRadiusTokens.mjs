@@ -3,8 +3,7 @@ import { normalizeUnits } from '../helpers/normalizeUnits.mjs';
 
 import {
   errorSetupRadiusTokensNoFrame,
-  errorSetupRadiusTokensNoChildren,
-  errorSetupRadiusTokensMissingProps
+  errorSetupRadiusTokensNoChildren
 } from '../../meta/errors.mjs';
 
 /**
@@ -24,19 +23,16 @@ export function setupRadiusTokens(radiusFrame) {
 
   let cornerRadiusObject = {};
 
-  radiusFrame.children.forEach((type) => {
-    if (!type.name) throw new Error(errorSetupRadiusTokensMissingProps);
+  const radiusChild = radiusFrame.children.find((c) => c.name.match(/\d+/));
+  const name = camelize(radiusChild.name);
 
-    const name = camelize(type.name);
+  const RADIUS = (() => {
+    if (radiusChild.cornerRadius)
+      return normalizeUnits(radiusChild.cornerRadius, 'cornerRadius', 'adjustedRadius');
+    else return `0px`;
+  })();
 
-    const RADIUS = (() => {
-      if (type.cornerRadius)
-        return normalizeUnits(type.cornerRadius, 'cornerRadius', 'adjustedRadius');
-      else return `0px`;
-    })();
-
-    cornerRadiusObject[name] = RADIUS;
-  });
+  cornerRadiusObject[name] = RADIUS;
 
   return cornerRadiusObject;
 }

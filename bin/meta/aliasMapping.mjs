@@ -28,6 +28,14 @@ export const tokenAliasMapping = [
     alias: ['typography', 'typografie']
   },
   {
+    name: 'heading',
+    alias: ['heading', 'headings']
+  },
+  {
+    name: 'copy',
+    alias: ['copy', 'copytext']
+  },
+  {
     name: 'letterSpacings',
     alias: ['letterspacing', 'letterspacings']
   },
@@ -44,7 +52,7 @@ export const tokenAliasMapping = [
     alias: ['opacity', 'opacities']
   },
   {
-    name: 'radii',
+    name: 'radius',
     alias: ['radius', 'radii']
   },
   {
