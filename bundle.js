@@ -1201,6 +1201,8 @@ function setupMediaQueryTokens(mediaQueryFrame) {
   if (!mediaQueryFrame) throw new Error(errorSetupMediaQueryTokensNoFrame);
   if (!mediaQueryFrame.children) throw new Error(errorSetupMediaQueryTokensNoChildren);
 
+  let mediaQueryObject = {};
+
   const mediaQueryChild = mediaQueryFrame.children.find((c) => c.name.match(/\d+/));
 
   if (!mediaQueryChild || !mediaQueryChild.name) {
@@ -1213,6 +1215,10 @@ function setupMediaQueryTokens(mediaQueryFrame) {
   if (mediaQueryChild.children && mediaQueryChild.children.length > 0) {
     mediaQueryValue = mediaQueryChild.children[0].absoluteBoundingBox.width;
   }
+
+  mediaQueryObject[name] = `${mediaQueryValue}px`;
+
+  return mediaQueryObject;
 }
 
 /**

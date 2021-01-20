@@ -38,4 +38,6 @@ export function setupMediaQueryTokens(mediaQueryFrame) {
   }
 
   mediaQueryObject[name] = `${mediaQueryValue}px`;
+
+  return mediaQueryObject;
 }
