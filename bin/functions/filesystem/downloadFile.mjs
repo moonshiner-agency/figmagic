@@ -1,5 +1,6 @@
-import fetch from 'node-fetch';
+import fetch, { Response } from 'node-fetch';
 import fs from 'fs';
+import { Readable } from 'stream';
 import path from 'path';
 import { msgDownloadFileWritingFile } from '../../meta/messages.mjs';
 import { errorDownloadFile } from '../../meta/errors.mjs';
@@ -24,16 +25,27 @@ export async function downloadFile(url, folder, file) {
   if (!fs.existsSync(folder)) fs.mkdirSync(folder);
 
   return new Promise(async (resolve, reject) => {
-		const PATH = `${folder}/${file}`;
+    const PATH = `${folder}/${file.replace(/Keepcols/g, '')}`;
 
-		try {
-			await	fs.promises.mkdir(path.dirname(PATH));
-		} catch(e){
-		}
+    try {
+      await fs.promises.mkdir(path.dirname(PATH));
+    } catch (e) {}
 
     console.log(msgDownloadFileWritingFile(PATH));
     const _file = fs.createWriteStream(PATH);
-    response.body.pipe(_file);
+    if (!file.includes('Keepcols') && file.includes('.svg')) {
+      const text = await response.text();
+      const modifiedText = text.replace(/(#\w+)/gm, 'currentColor');
+      const readable = new Readable.from([modifiedText]);
+      const newResponse = new Response(readable, {
+        status: response.status,
+        statusText: response.statusText,
+        headers: response.headers
+      });
+      newResponse.body.pipe(_file);
+    } else {
+      response.body.pipe(_file);
+    }
     _file.on('error', () => reject('Error when downloading file!'));
     _file.on('finish', () => resolve(PATH));
   });

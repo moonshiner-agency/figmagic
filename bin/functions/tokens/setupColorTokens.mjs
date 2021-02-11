@@ -37,8 +37,9 @@ export function setupColorTokens(colorFrame) {
     )}, ${roundColorValue(color.fills[0].color.b, 255)}, ${roundColorValue(ALPHA, 1)})`;
 
     const name = camelize(color.name);
-
-    colors[name] = COLOR_STRING;
+    if (name !== 'description') {
+      colors[name] = COLOR_STRING;
+    }
   });
 
   return colors;

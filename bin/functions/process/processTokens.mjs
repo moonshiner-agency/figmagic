@@ -14,7 +14,6 @@ import { setupOpacitiesTokens } from '../tokens/setupOpacitiesTokens.mjs';
 import { setupDurationTokens } from '../tokens/setupDurationTokens.mjs';
 import { setupDelayTokens } from '../tokens/setupDelayTokens.mjs';
 import { setupEasingTokens } from '../tokens/setupEasingTokens.mjs';
-import { setupGenericTokens } from '../tokens/setupGenericTokens.mjs';
 
 import { errorProcessTokens, errorProcessTokensNoConfig } from '../../meta/errors.mjs';
 import { ignoreElementsKeywords } from '../../meta/ignoreElementsKeywords.mjs';
@@ -25,10 +24,12 @@ const processGroup = ({ name, sheet, config }) => {
   let processedTokens = undefined;
 
   switch (name) {
-    case 'borderWidths': {
+    case 'borderWidth':
+    case 'width': {
       processedTokens = setupBorderWidthTokens(sheet);
       break;
     }
+    case 'color':
     case 'colors': {
       processedTokens = setupColorTokens(sheet);
       break;
@@ -62,6 +63,7 @@ const processGroup = ({ name, sheet, config }) => {
       processedTokens = setupLineHeightTokens(sheet);
       break;
     }
+    case 'breakpoint':
     case 'breakpoints':
     case 'mediaQueries': {
       processedTokens = setupMediaQueryTokens(sheet);
@@ -76,10 +78,12 @@ const processGroup = ({ name, sheet, config }) => {
       processedTokens = setupRadiusTokens(sheet);
       break;
     }
+    case 'shadow':
     case 'shadows': {
       processedTokens = setupShadowTokens(sheet);
       break;
     }
+    case 'space':
     case 'spacings': {
       if (!config) throw new Error(errorProcessTokensNoConfig);
       processedTokens = setupSpacingTokens(sheet, config.spacingUnit, config.remSize);
@@ -89,6 +93,7 @@ const processGroup = ({ name, sheet, config }) => {
       processedTokens = setupZindexTokens(sheet);
       break;
     }
+    case 'duration':
     case 'durations': {
       processedTokens = setupDurationTokens(sheet);
       break;
@@ -102,6 +107,7 @@ const processGroup = ({ name, sheet, config }) => {
       break;
     }
   }
+
   return Object.entries(processedTokens).reduce((res, [key, value]) => {
     res[key] = { value };
     return res;
@@ -146,6 +152,8 @@ export function processTokens(sheet, name, config) {
   const _NAME = tokenAliasMapping.find((item) => {
     return item.alias.includes(name.toLowerCase());
   }).name;
+
+  console.log(_NAME, name);
   if (!groups.length) {
     return { [_NAME]: processGroup({ name: _NAME, sheet: filteredSheet, config }) };
   }

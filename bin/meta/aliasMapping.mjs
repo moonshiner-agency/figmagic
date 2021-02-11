@@ -4,11 +4,11 @@ export const tokenAliasMapping = [
     alias: ['border', 'borders', 'rahmen']
   },
   {
-    name: 'borderWidths',
-    alias: ['breiten', 'borderwidth', 'borderwidths']
+    name: 'width',
+    alias: ['breiten', 'borderwidth', 'borderwidths', 'borderWidths', 'width']
   },
   {
-    name: 'colors',
+    name: 'color',
     alias: ['palette', 'farben', 'color', 'colors', 'colour', 'colours']
   },
   {
@@ -56,11 +56,11 @@ export const tokenAliasMapping = [
     alias: ['radius', 'radii']
   },
   {
-    name: 'shadows',
+    name: 'shadow',
     alias: ['schatten', 'shadow', 'shadows']
   },
   {
-    name: 'spacings',
+    name: 'space',
     alias: ['abstaende', 'space', 'spaces', 'spacing', 'spacings']
   },
   {
@@ -68,7 +68,7 @@ export const tokenAliasMapping = [
     alias: ['zindex', 'zindices']
   },
   {
-    name: 'durations',
+    name: 'duration',
     alias: [
       'transitions',
       'duration',
@@ -100,7 +100,7 @@ export const tokenAliasMapping = [
     alias: ['layout', 'layouts', 'layoutundgrid']
   },
   {
-    name: 'breakpoints',
+    name: 'breakpoint',
     alias: ['breakpoints', 'breakpoint', 'responsive-design', 'measure']
   }
 ];

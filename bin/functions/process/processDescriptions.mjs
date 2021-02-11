@@ -66,5 +66,6 @@ const filterDescriptions = (sheet, name, descriptionTags, descriptions = []) => 
       filterDescriptions(s.children, transformedName, descriptionTags, descriptions);
     }
   });
+
   return descriptions;
 };

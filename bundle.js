@@ -4,6 +4,7 @@ var path = require('path');
 var trash = require('trash');
 var fs = require('fs');
 var fetch = require('node-fetch');
+var stream = require('stream');
 var marked = require('marked');
 var sanitizeHtml = require('sanitize-html');
 
@@ -709,8 +710,9 @@ function setupColorTokens(colorFrame) {
     )}, ${roundColorValue(color.fills[0].color.b, 255)}, ${roundColorValue(ALPHA, 1)})`;
 
     const name = camelize(color.name);
-
-    colors[name] = COLOR_STRING;
+    if (name !== 'description') {
+      colors[name] = COLOR_STRING;
+    }
   });
 
   return colors;
@@ -1368,11 +1370,11 @@ const tokenAliasMapping = [
     alias: ['border', 'borders', 'rahmen']
   },
   {
-    name: 'borderWidths',
-    alias: ['breiten', 'borderwidth', 'borderwidths']
+    name: 'width',
+    alias: ['breiten', 'borderwidth', 'borderwidths', 'borderWidths', 'width']
   },
   {
-    name: 'colors',
+    name: 'color',
     alias: ['palette', 'farben', 'color', 'colors', 'colour', 'colours']
   },
   {
@@ -1420,11 +1422,11 @@ const tokenAliasMapping = [
     alias: ['radius', 'radii']
   },
   {
-    name: 'shadows',
+    name: 'shadow',
     alias: ['schatten', 'shadow', 'shadows']
   },
   {
-    name: 'spacings',
+    name: 'space',
     alias: ['abstaende', 'space', 'spaces', 'spacing', 'spacings']
   },
   {
@@ -1432,7 +1434,7 @@ const tokenAliasMapping = [
     alias: ['zindex', 'zindices']
   },
   {
-    name: 'durations',
+    name: 'duration',
     alias: [
       'transitions',
       'duration',
@@ -1464,7 +1466,7 @@ const tokenAliasMapping = [
     alias: ['layout', 'layouts', 'layoutundgrid']
   },
   {
-    name: 'breakpoints',
+    name: 'breakpoint',
     alias: ['breakpoints', 'breakpoint', 'responsive-design', 'measure']
   }
 ];
@@ -1496,10 +1498,12 @@ const processGroup = ({ name, sheet, config }) => {
   let processedTokens = undefined;
 
   switch (name) {
-    case 'borderWidths': {
+    case 'borderWidth':
+    case 'width': {
       processedTokens = setupBorderWidthTokens(sheet);
       break;
     }
+    case 'color':
     case 'colors': {
       processedTokens = setupColorTokens(sheet);
       break;
@@ -1533,6 +1537,7 @@ const processGroup = ({ name, sheet, config }) => {
       processedTokens = setupLineHeightTokens(sheet);
       break;
     }
+    case 'breakpoint':
     case 'breakpoints':
     case 'mediaQueries': {
       processedTokens = setupMediaQueryTokens(sheet);
@@ -1547,10 +1552,12 @@ const processGroup = ({ name, sheet, config }) => {
       processedTokens = setupRadiusTokens(sheet);
       break;
     }
+    case 'shadow':
     case 'shadows': {
       processedTokens = setupShadowTokens(sheet);
       break;
     }
+    case 'space':
     case 'spacings': {
       if (!config) throw new Error(errorProcessTokensNoConfig);
       processedTokens = setupSpacingTokens(sheet, config.spacingUnit, config.remSize);
@@ -1560,6 +1567,7 @@ const processGroup = ({ name, sheet, config }) => {
       processedTokens = setupZindexTokens(sheet);
       break;
     }
+    case 'duration':
     case 'durations': {
       processedTokens = setupDurationTokens(sheet);
       break;
@@ -1573,6 +1581,7 @@ const processGroup = ({ name, sheet, config }) => {
       break;
     }
   }
+
   return Object.entries(processedTokens).reduce((res, [key, value]) => {
     res[key] = { value };
     return res;
@@ -1617,6 +1626,8 @@ function processTokens(sheet, name, config) {
   const _NAME = tokenAliasMapping.find((item) => {
     return item.alias.includes(name.toLowerCase());
   }).name;
+
+  console.log(_NAME, name);
   if (!groups.length) {
     return { [_NAME]: processGroup({ name: _NAME, sheet: filteredSheet, config }) };
   }
@@ -1963,6 +1974,7 @@ const acceptedTokenTypes = [
   'spaces',
   'spacing',
   'spacings',
+  'width',
   'zindex',
   'zindices',
 
@@ -2029,7 +2041,7 @@ async function downloadFile(url, folder, file) {
   if (!fs__default['default'].existsSync(folder)) fs__default['default'].mkdirSync(folder);
 
   return new Promise(async (resolve, reject) => {
-    const PATH = `${folder}/${file}`;
+    const PATH = `${folder}/${file.replace(/Keepcols/g, '')}`;
 
     try {
       await fs__default['default'].promises.mkdir(path__default['default'].dirname(PATH));
@@ -2037,7 +2049,19 @@ async function downloadFile(url, folder, file) {
 
     console.log(msgDownloadFileWritingFile(PATH));
     const _file = fs__default['default'].createWriteStream(PATH);
-    response.body.pipe(_file);
+    if (!file.includes('Keepcols') && file.includes('.svg')) {
+      const text = await response.text();
+      const modifiedText = text.replace(/(#\w+)/gm, 'currentColor');
+      const readable = new stream.Readable.from([modifiedText]);
+      const newResponse = new fetch.Response(readable, {
+        status: response.status,
+        statusText: response.statusText,
+        headers: response.headers
+      });
+      newResponse.body.pipe(_file);
+    } else {
+      response.body.pipe(_file);
+    }
     _file.on('error', () => reject('Error when downloading file!'));
     _file.on('finish', () => resolve(PATH));
   });
@@ -2133,6 +2157,7 @@ const filterDescriptions = (sheet, name, descriptionTags, descriptions = []) => 
       filterDescriptions(s.children, transformedName, descriptionTags, descriptions);
     }
   });
+
   return descriptions;
 };
 
