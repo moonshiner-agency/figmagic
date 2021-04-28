@@ -35,14 +35,10 @@ const processGroup = ({ name, sheet, config }) => {
       break;
     }
     case 'copy':
-    case 'heading': {
-      if (!config) throw new Error(errorProcessTokensNoConfig);
-      processedTokens = setupFontTokens(sheet, config.fontUnit, config.remSize);
-      break;
-    }
+    case 'heading':
     case 'fontFamily': {
       if (!config) throw new Error(errorProcessTokensNoConfig);
-      processedTokens = setupFontTokens(sheet, config.usePostscriptFontNames);
+      processedTokens = setupFontTokens(sheet, config.fontUnit, config.remSize);
       break;
     }
     case 'fontSizes': {
@@ -153,7 +149,6 @@ export function processTokens(sheet, name, config) {
     return item.alias.includes(name.toLowerCase());
   }).name;
 
-  console.log(_NAME, name);
   if (!groups.length) {
     return { [_NAME]: processGroup({ name: _NAME, sheet: filteredSheet, config }) };
   }
