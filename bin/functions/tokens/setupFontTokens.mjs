@@ -29,7 +29,7 @@ export function setupFontTokens(fontFrame, fontUnit, remSize) {
   fontFrame.children.forEach((c) => {
     if (!c.name) throw new Error(errorSetupFontTokensMissingProps);
 
-    const slice = c.name.match(/size=(\d+)(.+=(\w*))?/);
+    const slice = c.name.match(/size=(\w+)/);
     if (slice) {
       const name = slice[1];
       const styleChild = c.children[0];

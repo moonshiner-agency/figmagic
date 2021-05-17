@@ -1627,7 +1627,7 @@ function processTokens(sheet, name, config) {
     return item.alias.includes(name.toLowerCase());
   }).name;
 
-  console.log(_NAME, name);
+  console.log(_NAME);
   if (!groups.length) {
     return { [_NAME]: processGroup({ name: _NAME, sheet: filteredSheet, config }) };
   }
