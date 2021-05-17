@@ -835,14 +835,14 @@ function setupFontTokens(fontFrame, fontUnit, remSize) {
   fontFrame.children.forEach((c) => {
     if (!c.name) throw new Error(errorSetupFontTokensMissingProps);
 
-    const slice = c.name.match(/size=(\d+)(.+=(\w*))?/);
+    const slice = c.name.match(/size=(\w+)/);
     if (slice) {
       const name = slice[1];
       const styleChild = c.children[0];
       const size = styleChild.style.fontSize / remSize + fontUnit;
-      const weight = styleChild.style.fontWeight;
-      const letterSpacing = styleChild.style.letterSpacing / remSize + fontUnit;
-      const lineHeight = styleChild.style.lineHeightPx / remSize + fontUnit;
+      styleChild.style.fontWeight;
+      styleChild.style.letterSpacing / remSize + fontUnit;
+      styleChild.style.lineHeightPx / remSize + fontUnit;
 
       fontObject[name] = size;
 
@@ -1509,14 +1509,10 @@ const processGroup = ({ name, sheet, config }) => {
       break;
     }
     case 'copy':
-    case 'heading': {
-      if (!config) throw new Error(errorProcessTokensNoConfig);
-      processedTokens = setupFontTokens(sheet, config.fontUnit, config.remSize);
-      break;
-    }
+    case 'heading':
     case 'fontFamily': {
       if (!config) throw new Error(errorProcessTokensNoConfig);
-      processedTokens = setupFontTokens(sheet, config.usePostscriptFontNames);
+      processedTokens = setupFontTokens(sheet, config.fontUnit, config.remSize);
       break;
     }
     case 'fontSizes': {
@@ -1627,7 +1623,6 @@ function processTokens(sheet, name, config) {
     return item.alias.includes(name.toLowerCase());
   }).name;
 
-  console.log(_NAME);
   if (!groups.length) {
     return { [_NAME]: processGroup({ name: _NAME, sheet: filteredSheet, config }) };
   }
@@ -2423,7 +2418,7 @@ async function figmagic({ CLI_ARGS, CWD } = { CLI_ARGS: [], CWD: '' }) {
     }
   }
 
-  const COMPONENTS = DATA.components;
+  DATA.components;
   // const STYLES = DATA.styles;
   // Syncing elements
   if (syncElements) {
